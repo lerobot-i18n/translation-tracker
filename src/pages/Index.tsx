@@ -1,4 +1,4 @@
-import { FileText, CheckCircle2, Clock, CircleDashed, RefreshCw, Wifi, WifiOff, AlertCircle, Loader2 } from "lucide-react";
+import { FileText, CheckCircle2, Clock, CircleDashed, Search, RefreshCw, Wifi, WifiOff, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMergedTranslationData } from "@/hooks/useGithubData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,7 +21,8 @@ export default function Index() {
   const statCards = [
     { label: "전체 파일", value: stats.total, icon: FileText, className: "text-foreground" },
     { label: "번역 완료", value: stats.done, icon: CheckCircle2, className: "text-status-done" },
-    { label: "진행 중", value: stats.progress, icon: Clock, className: "text-status-progress" },
+    { label: "검수중", value: stats.review, icon: Search, className: "text-blue-500" },
+    { label: "번역중", value: stats.translating, icon: Clock, className: "text-status-progress" },
     { label: "미번역", value: stats.pending, icon: CircleDashed, className: "text-muted-foreground" },
   ];
 
@@ -84,7 +85,7 @@ export default function Index() {
       {/* Loading skeleton */}
       {isLoading ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="rounded-lg border border-border bg-card p-4 animate-pulse">
                 <div className="h-8 bg-muted rounded w-16 mb-2" />
@@ -104,7 +105,7 @@ export default function Index() {
       ) : (
         <>
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {statCards.map((c) => (
               <div key={c.label} className="rounded-lg border border-border bg-card p-4 flex items-center gap-3">
                 <c.icon className={`h-7 w-7 ${c.className} shrink-0`} />

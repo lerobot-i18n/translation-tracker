@@ -1,14 +1,14 @@
-import StatusBadge from "./StatusBadge";
+import StatusBadge, { TranslationStatus } from "./StatusBadge";
 import { ChevronDown, FileText } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { TranslationStatus } from "@/data/translationData";
 
 interface FileEntry {
   filename: string;
   title: string;
-  status: TranslationStatus | "outdated";
+  status: TranslationStatus;
   assignee?: string;
+  reviewer?: string;
   pr?: string;
   enPath?: string;
   koPath?: string;
@@ -71,12 +71,11 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                   </thead>
                   <tbody>
                     {section.files.map((file) => {
-                      const displayStatus = file.status === "outdated" ? "progress" : file.status;
                       return (
                         <tr key={file.filename} className="border-t border-border hover:bg-muted/20 transition-colors">
                           <td className="px-4 py-2 font-mono text-xs text-foreground">{file.filename}</td>
                           <td className="px-4 py-2 text-foreground hidden sm:table-cell">{file.title}</td>
-                          <td className="px-4 py-2 text-center"><StatusBadge status={displayStatus} /></td>
+                          <td className="px-4 py-2 text-center"><StatusBadge status={file.status} /></td>
                           <td className="px-4 py-2 text-center text-muted-foreground hidden sm:table-cell">{file.assignee || "-"}</td>
                           <td className="px-4 py-2 text-center hidden sm:table-cell">
                             {file.pr ? (

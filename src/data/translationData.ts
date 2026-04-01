@@ -1,4 +1,4 @@
-export type TranslationStatus = "done" | "progress" | "pending";
+export type TranslationStatus = "done" | "review" | "translating" | "pending";
 
 export interface TranslationFile {
   filename: string;

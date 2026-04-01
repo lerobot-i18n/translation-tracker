@@ -169,6 +169,7 @@ export interface IssueChecklistItem {
   title: string;
   checked: boolean;
   assignee?: string;
+  reviewer?: string;
   pr?: string;
   section: string;
 }
@@ -215,15 +216,19 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
       const titleMatch = rest.match(/^([^(@]*)/);
       const title = titleMatch ? titleMatch[1].replace(/\s*$/, "") : filename;
 
-      // Extract assignee
+      // Extract assignee (translator)
       const assigneeMatch = rest.match(/@(\w+)/);
       const assignee = assigneeMatch ? `@${assigneeMatch[1]}` : undefined;
+
+      // Extract reviewer (🔍@user pattern)
+      const reviewerMatch = rest.match(/🔍@(\w+)/);
+      const reviewer = reviewerMatch ? `@${reviewerMatch[1]}` : undefined;
 
       // Extract PR number
       const prMatch = rest.match(/#(\d+)/);
       const pr = prMatch ? `#${prMatch[1]}` : undefined;
 
-      items.push({ filename, title, checked, assignee, pr, section: currentSection });
+      items.push({ filename, title, checked, assignee, reviewer, pr, section: currentSection });
     }
   }
 

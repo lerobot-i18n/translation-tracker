@@ -94,6 +94,7 @@ export function useMergedTranslationData() {
 
     let status = s.status; // "done" or "pending" from GitHub API
     let assignee: string | undefined;
+    let reviewer: string | undefined;
     let pr: string | undefined;
     let section = s.section;
 
@@ -101,29 +102,32 @@ export function useMergedTranslationData() {
       // Issue data overrides section name
       if (issueItem.section) section = issueItem.section;
       assignee = issueItem.assignee;
+      reviewer = issueItem.reviewer;
       pr = issueItem.pr;
 
-      // If GitHub says file exists → done
-      // If GitHub says no file but issue says checked → done (maybe PR not merged to main yet but confirmed)
-      // If GitHub says no file and issue says unchecked but has assignee → progress
-      // If GitHub says no file and issue says unchecked and no assignee → pending
-      if (s.status === "done") {
+      // 4-stage status:
+      // done: [x] checked OR file exists in ko/
+      // review: [ ] unchecked, has assignee + has reviewer (🔍@user)
+      // translating: [ ] unchecked, has assignee but no reviewer
+      // pending: [ ] unchecked, no assignee
+      if (s.status === "done" || issueItem.checked) {
         status = "done";
-      } else if (issueItem.checked) {
-        status = "done";
+      } else if (issueItem.reviewer) {
+        status = "review";
       } else if (issueItem.assignee) {
-        status = "outdated"; // we use "outdated" as "in progress" in the UI
+        status = "translating";
       } else {
         status = "pending";
       }
     }
 
-    return { ...s, status, assignee, pr, section };
+    return { ...s, status, assignee, reviewer, pr, section };
   });
 
   const total = mergedStatuses.length;
   const done = mergedStatuses.filter((s) => s.status === "done").length;
-  const progress = mergedStatuses.filter((s) => s.status === "outdated").length;
+  const review = mergedStatuses.filter((s) => s.status === "review").length;
+  const translating = mergedStatuses.filter((s) => s.status === "translating").length;
   const pending = mergedStatuses.filter((s) => s.status === "pending").length;
 
   // Group by section from issue checklist (preferred) or directory
@@ -171,13 +175,15 @@ export function useMergedTranslationData() {
       nameKo: koLabels[name] || name,
       total: files.length,
       done: files.filter((f) => f.status === "done").length,
-      progress: files.filter((f) => f.status === "outdated").length,
+      review: files.filter((f) => f.status === "review").length,
+      translating: files.filter((f) => f.status === "translating").length,
       pending: files.filter((f) => f.status === "pending").length,
       files: files.map((f) => ({
         filename: f.filename,
         title: (issueMap.get(f.filename)?.title) || f.filename.replace(/\.mdx$/, "").split("/").pop() || f.filename,
-        status: f.status === "outdated" ? ("progress" as const) : f.status as "done" | "pending",
+        status: f.status as "done" | "review" | "translating" | "pending",
         assignee: (f as any).assignee,
+        reviewer: (f as any).reviewer,
         pr: (f as any).pr,
         enPath: f.enPath,
         koPath: f.koPath,
@@ -185,7 +191,7 @@ export function useMergedTranslationData() {
     }));
 
   return {
-    stats: { total, done, progress, pending },
+    stats: { total, done, review, translating, pending },
     sectionStats,
     isLoading,
     error,

@@ -1,10 +1,28 @@
-import { sections } from "@/data/translationData";
 import StatusBadge from "./StatusBadge";
-import { ChevronDown, ExternalLink, FileText } from "lucide-react";
+import { ChevronDown, FileText } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { TranslationStatus } from "@/data/translationData";
 
-export default function TranslationTable() {
+interface FileEntry {
+  filename: string;
+  title: string;
+  status: TranslationStatus | "outdated";
+  assignee?: string;
+  pr?: string;
+  enPath?: string;
+  koPath?: string;
+}
+
+interface SectionEntry {
+  name: string;
+  nameKo: string;
+  total: number;
+  done: number;
+  files: FileEntry[];
+}
+
+export default function TranslationTable({ sections }: { sections: SectionEntry[] }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const toggle = (name: string) =>
@@ -14,8 +32,9 @@ export default function TranslationTable() {
     <div className="space-y-3">
       <h2 className="text-lg font-bold text-foreground">📋 섹션별 번역 현황</h2>
       {sections.map((section) => {
-        const done = section.files.filter((f) => f.status === "done").length;
-        const pct = section.files.length > 0 ? Math.round((done / section.files.length) * 100) : 0;
+        const done = section.done;
+        const total = section.total;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         const isOpen = !collapsed[section.name];
         return (
           <div key={section.name} className="rounded-lg border border-border bg-card overflow-hidden">
@@ -27,11 +46,10 @@ export default function TranslationTable() {
                 <span className="font-semibold text-foreground">{section.name}</span>
                 <span className="text-sm text-muted-foreground">({section.nameKo})</span>
                 <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
-                  {done}/{section.files.length} ({pct}%)
+                  {done}/{total} ({pct}%)
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {/* Mini progress bar */}
                 <div className="hidden sm:block w-20 h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
                 </div>
@@ -44,7 +62,7 @@ export default function TranslationTable() {
                   <thead>
                     <tr className="border-t border-border bg-muted/30">
                       <th className="px-4 py-2 text-left font-medium text-muted-foreground">파일명</th>
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground hidden sm:table-cell">영문 제목</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground hidden sm:table-cell">제목</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground">상태</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">담당자</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">PR</th>
@@ -52,37 +70,40 @@ export default function TranslationTable() {
                     </tr>
                   </thead>
                   <tbody>
-                    {section.files.map((file) => (
-                      <tr key={file.filename} className="border-t border-border hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-2 font-mono text-xs text-foreground">{file.filename}</td>
-                        <td className="px-4 py-2 text-foreground hidden sm:table-cell">{file.title}</td>
-                        <td className="px-4 py-2 text-center"><StatusBadge status={file.status} /></td>
-                        <td className="px-4 py-2 text-center text-muted-foreground hidden sm:table-cell">{file.assignee || "-"}</td>
-                        <td className="px-4 py-2 text-center hidden sm:table-cell">
-                          {file.pr ? (
-                            <a
-                              href={`https://github.com/huggingface/lerobot/pull/${file.pr.replace("#", "")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline"
+                    {section.files.map((file) => {
+                      const displayStatus = file.status === "outdated" ? "progress" : file.status;
+                      return (
+                        <tr key={file.filename} className="border-t border-border hover:bg-muted/20 transition-colors">
+                          <td className="px-4 py-2 font-mono text-xs text-foreground">{file.filename}</td>
+                          <td className="px-4 py-2 text-foreground hidden sm:table-cell">{file.title}</td>
+                          <td className="px-4 py-2 text-center"><StatusBadge status={displayStatus} /></td>
+                          <td className="px-4 py-2 text-center text-muted-foreground hidden sm:table-cell">{file.assignee || "-"}</td>
+                          <td className="px-4 py-2 text-center hidden sm:table-cell">
+                            {file.pr ? (
+                              <a
+                                href={`https://github.com/huggingface/lerobot/pull/${file.pr.replace("#", "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                {file.pr}
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-center">
+                            <Link
+                              to={`/file/${encodeURIComponent(file.filename)}`}
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                              title="상세 보기"
                             >
-                              {file.pr}
-                            </a>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2 text-center">
-                          <Link
-                            to={`/file/${encodeURIComponent(file.filename)}`}
-                            className="text-muted-foreground hover:text-primary transition-colors"
-                            title="상세 보기"
-                          >
-                            <FileText className="h-3.5 w-3.5 inline" />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
+                              <FileText className="h-3.5 w-3.5 inline" />
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

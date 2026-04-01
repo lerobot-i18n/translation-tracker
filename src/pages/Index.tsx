@@ -93,7 +93,7 @@ export default function Index() {
       </div>
 
       {/* Translation Table */}
-      <TranslationTable />
+      <TranslationTable sections={sectionStats} />
     </div>
   );
 }

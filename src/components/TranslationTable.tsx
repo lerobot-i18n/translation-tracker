@@ -1,7 +1,8 @@
 import { sections } from "@/data/translationData";
 import StatusBadge from "./StatusBadge";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ExternalLink, FileText } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function TranslationTable() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -10,10 +11,11 @@ export default function TranslationTable() {
     setCollapsed((prev) => ({ ...prev, [name]: !prev[name] }));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2 className="text-lg font-bold text-foreground">📋 섹션별 번역 현황</h2>
       {sections.map((section) => {
         const done = section.files.filter((f) => f.status === "done").length;
+        const pct = section.files.length > 0 ? Math.round((done / section.files.length) * 100) : 0;
         const isOpen = !collapsed[section.name];
         return (
           <div key={section.name} className="rounded-lg border border-border bg-card overflow-hidden">
@@ -24,11 +26,17 @@ export default function TranslationTable() {
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-foreground">{section.name}</span>
                 <span className="text-sm text-muted-foreground">({section.nameKo})</span>
-                <span className="text-xs text-muted-foreground ml-1">
-                  {done}/{section.files.length}
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {done}/{section.files.length} ({pct}%)
                 </span>
               </div>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              <div className="flex items-center gap-2">
+                {/* Mini progress bar */}
+                <div className="hidden sm:block w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                </div>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              </div>
             </button>
             {isOpen && (
               <div className="overflow-x-auto">
@@ -40,6 +48,7 @@ export default function TranslationTable() {
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground">상태</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">담당자</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">PR</th>
+                      <th className="px-4 py-2 text-center font-medium text-muted-foreground w-10"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -62,6 +71,15 @@ export default function TranslationTable() {
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <Link
+                            to={`/file/${encodeURIComponent(file.filename)}`}
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            title="상세 보기"
+                          >
+                            <FileText className="h-3.5 w-3.5 inline" />
+                          </Link>
                         </td>
                       </tr>
                     ))}

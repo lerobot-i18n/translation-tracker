@@ -1,0 +1,173 @@
+const REPO = "huggingface/lerobot";
+const API_BASE = "https://api.github.com";
+const DOCS_BASE = "docs/source";
+const CACHE_KEY = "lerobot-github-data";
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export interface GitHubFileInfo {
+  path: string;
+  filename: string;
+  sha: string;
+  size: number;
+}
+
+export interface GitHubCommitInfo {
+  sha: string;
+  date: string;
+  message: string;
+  author: string;
+  authorAvatar?: string;
+}
+
+export interface TranslationFileStatus {
+  filename: string;
+  section: string;
+  enPath: string;
+  koPath?: string;
+  status: "done" | "pending" | "outdated";
+  enLastModified?: string;
+  koLastModified?: string;
+  enSize?: number;
+  koSize?: number;
+}
+
+interface CachedData<T> {
+  data: T;
+  timestamp: number;
+}
+
+function getCached<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const cached: CachedData<T> = JSON.parse(raw);
+    if (Date.now() - cached.timestamp > CACHE_TTL) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return cached.data;
+  } catch {
+    return null;
+  }
+}
+
+function setCache<T>(key: string, data: T) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {}
+}
+
+async function fetchGitHub(endpoint: string) {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    headers: { Accept: "application/vnd.github.v3+json" },
+  });
+  if (!res.ok) {
+    if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
+    throw new Error(`GitHub API error: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchRepoTree(): Promise<{ enFiles: GitHubFileInfo[]; koFiles: GitHubFileInfo[] }> {
+  const cached = getCached<{ enFiles: GitHubFileInfo[]; koFiles: GitHubFileInfo[] }>(CACHE_KEY);
+  if (cached) return cached;
+
+  const tree = await fetchGitHub(`/repos/${REPO}/git/trees/main?recursive=1`);
+  const allFiles: Array<{ path: string; sha: string; size: number }> = tree.tree.filter(
+    (f: any) => f.type === "blob"
+  );
+
+  const enFiles: GitHubFileInfo[] = [];
+  const koFiles: GitHubFileInfo[] = [];
+
+  for (const f of allFiles) {
+    if (f.path.startsWith(`${DOCS_BASE}/`) && f.path.endsWith(".mdx") && !f.path.startsWith(`${DOCS_BASE}/ko/`)) {
+      const relative = f.path.slice(DOCS_BASE.length + 1);
+      // Skip _toctree.yml or hidden files
+      if (relative.startsWith("_") || relative.startsWith(".")) continue;
+      enFiles.push({ path: f.path, filename: relative, sha: f.sha, size: f.size });
+    }
+    if (f.path.startsWith(`${DOCS_BASE}/ko/`) && f.path.endsWith(".mdx")) {
+      const relative = f.path.slice(`${DOCS_BASE}/ko/`.length);
+      if (relative.startsWith("_") || relative.startsWith(".")) continue;
+      koFiles.push({ path: f.path, filename: relative, sha: f.sha, size: f.size });
+    }
+  }
+
+  const result = { enFiles, koFiles };
+  setCache(CACHE_KEY, result);
+  return result;
+}
+
+export async function fetchFileCommits(path: string, maxCount = 1): Promise<GitHubCommitInfo[]> {
+  const cacheKey = `lerobot-commits-${path}`;
+  const cached = getCached<GitHubCommitInfo[]>(cacheKey);
+  if (cached) return cached;
+
+  const commits = await fetchGitHub(`/repos/${REPO}/commits?path=${encodeURIComponent(path)}&per_page=${maxCount}`);
+  const result = commits.map((c: any) => ({
+    sha: c.sha,
+    date: c.commit.committer.date,
+    message: c.commit.message.split("\n")[0],
+    author: c.author?.login || c.commit.author.name,
+    authorAvatar: c.author?.avatar_url,
+  }));
+  setCache(cacheKey, result);
+  return result;
+}
+
+export async function fetchRecentPRs(): Promise<Array<{ number: number; title: string; author: string; authorAvatar: string; mergedAt: string; url: string }>> {
+  const cacheKey = "lerobot-recent-prs";
+  const cached = getCached<any[]>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const prs = await fetchGitHub(`/repos/${REPO}/pulls?state=closed&per_page=30&sort=updated&direction=desc`);
+    const i18nPRs = prs
+      .filter((pr: any) => pr.merged_at && (pr.title.includes("[i18n") || pr.title.toLowerCase().includes("translat") || pr.title.includes("ko/")))
+      .slice(0, 10)
+      .map((pr: any) => ({
+        number: pr.number,
+        title: pr.title,
+        author: pr.user.login,
+        authorAvatar: pr.user.avatar_url,
+        mergedAt: pr.merged_at,
+        url: pr.html_url,
+      }));
+    setCache(cacheKey, i18nPRs);
+    return i18nPRs;
+  } catch {
+    return [];
+  }
+}
+
+export function buildTranslationStatus(enFiles: GitHubFileInfo[], koFiles: GitHubFileInfo[]): TranslationFileStatus[] {
+  const koMap = new Map(koFiles.map((f) => [f.filename, f]));
+
+  return enFiles.map((en) => {
+    const ko = koMap.get(en.filename);
+    return {
+      filename: en.filename,
+      section: extractSection(en.filename),
+      enPath: en.path,
+      koPath: ko?.path,
+      status: ko ? "done" : "pending",
+      enSize: en.size,
+      koSize: ko?.size,
+    };
+  });
+}
+
+function extractSection(filename: string): string {
+  const parts = filename.split("/");
+  if (parts.length > 1) return parts[0];
+  return "root";
+}
+
+export function getGitHubFileUrl(path: string): string {
+  return `https://github.com/${REPO}/blob/main/${path}`;
+}
+
+export function getGitHubRawUrl(path: string): string {
+  return `https://raw.githubusercontent.com/${REPO}/main/${path}`;
+}

@@ -49,9 +49,13 @@ export function useFileCommits(path: string | undefined) {
   });
 }
 
+// Merged hook: combines GitHub tree data with issue checklist
 export function useMergedTranslationData() {
-  const { data: githubData, isLoading: isLoadingGithub, error: githubError } = useTranslationData();
-  const { data: issueData, isLoading: isLoadingIssue, error: issueError } = useIssueChecklist();
+  const translationQuery = useTranslationData();
+  const issueQuery = useIssueChecklist();
+
+  const { data: githubData, isLoading: isLoadingGithub, error: githubError } = translationQuery;
+  const { data: issueData, isLoading: isLoadingIssue, error: issueError } = issueQuery;
 
   const isLoading = isLoadingGithub || isLoadingIssue;
   const error = githubError || issueError;

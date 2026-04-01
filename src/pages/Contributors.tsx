@@ -7,8 +7,8 @@ import { useMergedTranslationData } from "@/hooks/useGithubData";
 interface Contributor {
   username: string;
   avatar: string;
-  role: "Lead Translator" | "Translator" | "Reviewer";
-  joinedAt: string; // ISO date
+  role: "Contributor";
+  joinedAt: string;
 }
 
 const contributors: Contributor[] = [
@@ -27,9 +27,7 @@ const contributors: Contributor[] = [
 ];
 
 const roleBadgeClass: Record<string, string> = {
-  "Lead Translator": "bg-primary/15 text-primary border-primary/30",
-  Translator: "bg-accent text-accent-foreground border-border",
-  Reviewer: "bg-secondary text-secondary-foreground border-border",
+  Contributor: "bg-accent text-accent-foreground border-border",
 };
 
 export default function Contributors() {

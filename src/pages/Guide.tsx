@@ -54,8 +54,6 @@ export default function Guide() {
       <div className="rounded-lg border border-border bg-card p-6">
         <h3 className="font-semibold text-foreground mb-5">번역 프로세스</h3>
         <div className="relative">
-          {/* Connection line */}
-          <div className="hidden md:block absolute top-10 left-[10%] right-[10%] h-0.5 bg-border" />
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {steps.map((step, i) => (

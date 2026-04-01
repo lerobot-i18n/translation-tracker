@@ -1,0 +1,27 @@
+import { FileText, CheckCircle2, Clock, CircleDashed } from "lucide-react";
+import { getStats } from "@/data/translationData";
+
+const cards = [
+  { label: "전체 파일 수", key: "total" as const, icon: FileText, className: "text-foreground" },
+  { label: "번역 완료", key: "done" as const, icon: CheckCircle2, className: "text-status-done" },
+  { label: "진행 중", key: "progress" as const, icon: Clock, className: "text-status-progress" },
+  { label: "미번역", key: "pending" as const, icon: CircleDashed, className: "text-muted-foreground" },
+];
+
+export default function StatsCards() {
+  const stats = getStats();
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {cards.map((c) => (
+        <div key={c.key} className="rounded-lg border border-border bg-card p-4 flex items-center gap-3">
+          <c.icon className={`h-8 w-8 ${c.className} shrink-0`} />
+          <div>
+            <p className="text-2xl font-bold text-foreground">{stats[c.key]}</p>
+            <p className="text-xs text-muted-foreground">{c.label}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

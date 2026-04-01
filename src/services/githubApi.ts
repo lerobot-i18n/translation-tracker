@@ -164,6 +164,73 @@ function extractSection(filename: string): string {
   return "root";
 }
 
+export interface IssueChecklistItem {
+  filename: string;
+  title: string;
+  checked: boolean;
+  assignee?: string;
+  pr?: string;
+  section: string;
+}
+
+export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChecklistItem[]> {
+  const cacheKey = `lerobot-issue-${issueNumber}`;
+  const cached = getCached<IssueChecklistItem[]>(cacheKey);
+  if (cached) return cached;
+
+  // First check issue body, then comments for checklist
+  const issue = await fetchGitHub(`/repos/${REPO}/issues/${issueNumber}`);
+  let body: string = issue.body || "";
+
+  // If body doesn't have checklist, search in comments
+  if (!body.includes("- [x]") && !body.includes("- [ ]")) {
+    const comments = await fetchGitHub(`/repos/${REPO}/issues/${issueNumber}/comments?per_page=30`);
+    for (const comment of comments) {
+      const commentBody: string = comment.body || "";
+      if (commentBody.includes("- [x]") || commentBody.includes("- [ ]")) {
+        body = commentBody;
+        break;
+      }
+    }
+  }
+  const items: IssueChecklistItem[] = [];
+  let currentSection = "";
+
+  for (const line of body.split("\n")) {
+    // Detect section headers like "### Get Started (시작하기)"
+    const sectionMatch = line.match(/^###\s+(.+?)(?:\s*\(.*\))?\s*$/);
+    if (sectionMatch) {
+      currentSection = sectionMatch[1].trim();
+      continue;
+    }
+
+    // Detect checklist items like "- [x] `filename.mdx` — Title (@user, #123)"
+    const checkMatch = line.match(/^-\s+\[([ xX])\]\s+`([^`]+)`\s*(?:—|-)?\s*(.*)/);
+    if (checkMatch) {
+      const checked = checkMatch[1].toLowerCase() === "x";
+      const filename = checkMatch[2];
+      const rest = checkMatch[3] || "";
+
+      // Extract title (before first parenthesis or @)
+      const titleMatch = rest.match(/^([^(@]*)/);
+      const title = titleMatch ? titleMatch[1].replace(/\s*$/, "") : filename;
+
+      // Extract assignee
+      const assigneeMatch = rest.match(/@(\w+)/);
+      const assignee = assigneeMatch ? `@${assigneeMatch[1]}` : undefined;
+
+      // Extract PR number
+      const prMatch = rest.match(/#(\d+)/);
+      const pr = prMatch ? `#${prMatch[1]}` : undefined;
+
+      items.push({ filename, title, checked, assignee, pr, section: currentSection });
+    }
+  }
+
+  setCache(cacheKey, items);
+  return items;
+}
+
 export function getGitHubFileUrl(path: string): string {
   return `https://github.com/${REPO}/blob/main/${path}`;
 }

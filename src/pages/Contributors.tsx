@@ -1,51 +1,68 @@
-import { ExternalLink, Calendar } from "lucide-react";
+import { ExternalLink, Calendar, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { useMergedTranslationData } from "@/hooks/useGithubData";
+import { useMergedTranslationData, useIssueChecklist } from "@/hooks/useGithubData";
 
 interface Contributor {
   username: string;
   avatar: string;
-  role: "Contributor";
-  joinedAt: string;
+  role: "Lead Translator" | "Translator" | "Contributor";
+  completedFiles: string[];
+  inProgressFiles: string[];
 }
 
-const contributors: Contributor[] = [
-  {
-    username: "1wos",
-    avatar: "https://github.com/1wos.png",
-    role: "Contributor",
-    joinedAt: "2025-05-01",
-  },
-  {
-    username: "jahabe",
-    avatar: "https://github.com/jahabe.png",
-    role: "Contributor",
-    joinedAt: "2025-06-01",
-  },
-];
-
 const roleBadgeClass: Record<string, string> = {
+  "Lead Translator": "bg-primary/20 text-primary border-primary/30",
+  Translator: "bg-status-done/20 text-status-done border-status-done/30",
   Contributor: "bg-accent text-accent-foreground border-border",
 };
 
 export default function Contributors() {
-  const { rawStatuses } = useMergedTranslationData();
+  const { isLoading: isLoadingData } = useMergedTranslationData();
+  const { data: issueData, isLoading: isLoadingIssue } = useIssueChecklist();
 
-  // Build a map of completed files per contributor (from GitHub live data)
-  const completedFilesMap = new Map<string, string[]>();
-  // For now, since GitHub API doesn't give us assignee info,
-  // we mark files in ko/ as contributed by the lead translator
-  const doneFiles = rawStatuses
-    .filter((s) => s.status === "done")
-    .map((s) => s.filename);
+  const isLoading = isLoadingData || isLoadingIssue;
 
-  // Assign known completed files to contributors based on known info
-  completedFilesMap.set("1wos", doneFiles);
+  // Build contributors from issue checklist data
+  const contributorMap = new Map<string, Contributor>();
 
-  const sorted = [...contributors].sort(
-    (a, b) => new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime()
+  if (issueData) {
+    for (const item of issueData) {
+      if (!item.assignee) continue;
+      const username = item.assignee.replace("@", "");
+
+      if (!contributorMap.has(username)) {
+        contributorMap.set(username, {
+          username,
+          avatar: `https://github.com/${username}.png`,
+          role: "Contributor",
+          completedFiles: [],
+          inProgressFiles: [],
+        });
+      }
+
+      const contributor = contributorMap.get(username)!;
+      if (item.checked) {
+        contributor.completedFiles.push(item.filename);
+      } else {
+        contributor.inProgressFiles.push(item.filename);
+      }
+    }
+  }
+
+  // Determine roles based on contribution count
+  for (const [, contributor] of contributorMap) {
+    const total = contributor.completedFiles.length + contributor.inProgressFiles.length;
+    if (total >= 5) {
+      contributor.role = "Lead Translator";
+    } else if (contributor.completedFiles.length > 0) {
+      contributor.role = "Translator";
+    }
+  }
+
+  const sorted = Array.from(contributorMap.values()).sort(
+    (a, b) => (b.completedFiles.length + b.inProgressFiles.length) - (a.completedFiles.length + a.inProgressFiles.length)
   );
 
   return (
@@ -59,10 +76,18 @@ export default function Contributors() {
         </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        {sorted.map((c) => {
-          const files = completedFilesMap.get(c.username) || [];
-          return (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">참여자 정보를 불러오는 중...</span>
+        </div>
+      ) : sorted.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          아직 참여자가 없습니다
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {sorted.map((c) => (
             <Card key={c.username}>
               <CardContent className="p-5 space-y-4">
                 {/* Profile */}
@@ -92,46 +117,54 @@ export default function Contributors() {
                   </div>
                 </div>
 
-                {/* Join date */}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>
-                    참여 시작:{" "}
-                    {new Date(c.joinedAt).toLocaleDateString("ko-KR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
+                {/* Stats */}
+                <div className="flex gap-4 text-xs text-muted-foreground">
+                  <span>번역 완료: <strong className="text-foreground">{c.completedFiles.length}</strong></span>
+                  <span>진행 중: <strong className="text-foreground">{c.inProgressFiles.length}</strong></span>
                 </div>
 
                 {/* Completed files */}
-                {files.length > 0 ? (
+                {c.completedFiles.length > 0 && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1.5">
-                      번역 완료 ({files.length}개):
+                      번역 완료 ({c.completedFiles.length}개):
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {files.map((f) => (
+                      {c.completedFiles.map((f) => (
                         <span
                           key={f}
-                          className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+                          className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-status-done/10 text-status-done"
                         >
                           {f}
                         </span>
                       ))}
                     </div>
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic">
-                    아직 완료된 번역 파일이 없습니다
-                  </p>
+                )}
+
+                {/* In progress files */}
+                {c.inProgressFiles.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">
+                      진행 중 ({c.inProgressFiles.length}개):
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {c.inProgressFiles.map((f) => (
+                        <span
+                          key={f}
+                          className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-status-progress/10 text-status-progress"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Call to action */}
       <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-6 text-center">

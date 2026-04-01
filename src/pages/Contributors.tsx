@@ -15,13 +15,13 @@ const contributors: Contributor[] = [
   {
     username: "1wos",
     avatar: "https://github.com/1wos.png",
-    role: "Lead Translator",
+    role: "Contributor",
     joinedAt: "2025-05-01",
   },
   {
     username: "jahabe",
     avatar: "https://github.com/jahabe.png",
-    role: "Translator",
+    role: "Contributor",
     joinedAt: "2025-06-01",
   },
 ];

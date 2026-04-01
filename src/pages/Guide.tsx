@@ -27,7 +27,7 @@ const steps = [
   },
   {
     icon: Rocket,
-    emoji: "🚀",
+    emoji: "✨",
     title: "PR 제출",
     desc: "[i18n-KO] Translate <filename>.mdx 형식으로 Pull Request를 제출합니다.",
   },

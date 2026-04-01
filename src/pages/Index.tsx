@@ -1,4 +1,4 @@
-import { FileText, CheckCircle2, Clock, CircleDashed, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { FileText, CheckCircle2, Clock, CircleDashed, RefreshCw, Wifi, WifiOff, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMergedTranslationData } from "@/hooks/useGithubData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -6,10 +6,9 @@ import OverviewCharts from "@/components/OverviewCharts";
 import SectionBarChart from "@/components/SectionBarChart";
 import ActivityTimeline from "@/components/ActivityTimeline";
 import TranslationTable from "@/components/TranslationTable";
-import StatusBadge from "@/components/StatusBadge";
 
 export default function Index() {
-  const { stats, sectionStats, isLoading, isLive } = useMergedTranslationData();
+  const { stats, sectionStats, isLoading, error, isLive } = useMergedTranslationData();
   const queryClient = useQueryClient();
 
   const handleRefresh = () => {
@@ -41,8 +40,10 @@ export default function Index() {
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               {isLive ? (
                 <><Wifi className="h-3 w-3 text-status-done" /> Live</>
+              ) : isLoading ? (
+                <><Loader2 className="h-3 w-3 animate-spin" /> 로딩 중...</>
               ) : (
-                <><WifiOff className="h-3 w-3" /> Static</>
+                <><WifiOff className="h-3 w-3" /> Offline</>
               )}
             </span>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
@@ -51,6 +52,19 @@ export default function Index() {
             </Button>
           </div>
         </div>
+
+        {/* Error banner */}
+        {error && (
+          <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 border border-destructive/30 text-sm">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+            <p className="text-foreground">
+              GitHub API 오류: {error instanceof Error ? error.message : "알 수 없는 오류"}
+            </p>
+            <Button variant="outline" size="sm" className="ml-auto shrink-0" onClick={handleRefresh}>
+              재시도
+            </Button>
+          </div>
+        )}
 
         {/* Global progress bar */}
         <div>
@@ -67,33 +81,57 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {statCards.map((c) => (
-          <div key={c.label} className="rounded-lg border border-border bg-card p-4 flex items-center gap-3">
-            <c.icon className={`h-7 w-7 ${c.className} shrink-0`} />
-            <div>
-              <p className="text-2xl font-bold text-foreground">{c.value}</p>
-              <p className="text-xs text-muted-foreground">{c.label}</p>
-            </div>
+      {/* Loading skeleton */}
+      {isLoading ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-lg border border-border bg-card p-4 animate-pulse">
+                <div className="h-8 bg-muted rounded w-16 mb-2" />
+                <div className="h-3 bg-muted rounded w-20" />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-lg border border-border bg-card p-5 h-48 animate-pulse">
+                <div className="h-4 bg-muted rounded w-24 mb-4" />
+                <div className="h-24 bg-muted rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {statCards.map((c) => (
+              <div key={c.label} className="rounded-lg border border-border bg-card p-4 flex items-center gap-3">
+                <c.icon className={`h-7 w-7 ${c.className} shrink-0`} />
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{c.value}</p>
+                  <p className="text-xs text-muted-foreground">{c.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
 
-      {/* Charts Row */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <OverviewCharts
-          done={stats.done}
-          progress={stats.progress}
-          pending={stats.pending}
-          total={stats.total}
-        />
-        <SectionBarChart sections={sectionStats} />
-        <ActivityTimeline />
-      </div>
+          {/* Charts Row */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <OverviewCharts
+              done={stats.done}
+              progress={stats.progress}
+              pending={stats.pending}
+              total={stats.total}
+            />
+            <SectionBarChart sections={sectionStats} />
+            <ActivityTimeline />
+          </div>
 
-      {/* Translation Table */}
-      <TranslationTable sections={sectionStats} />
+          {/* Translation Table */}
+          <TranslationTable sections={sectionStats} />
+        </>
+      )}
     </div>
   );
 }

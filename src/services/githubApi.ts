@@ -59,11 +59,21 @@ function setCache<T>(key: string, data: T) {
 }
 
 async function fetchGitHub(endpoint: string) {
-  const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
-  const token = import.meta.env.VITE_GITHUB_TOKEN;
-  if (token) headers.Authorization = `token ${token}`;
+  const { data, error } = await supabase.functions.invoke("github-proxy", {
+    body: null,
+    method: "GET",
+  });
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { headers });
+  // supabase.functions.invoke doesn't support query params well, use fetch directly
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const url = `${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(endpoint)}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${supabaseKey}`,
+      apikey: supabaseKey,
+    },
+  });
   if (!res.ok) {
     if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
     throw new Error(`GitHub API error: ${res.status}`);

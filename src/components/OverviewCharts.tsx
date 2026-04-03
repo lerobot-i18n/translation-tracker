@@ -2,18 +2,20 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface OverviewChartsProps {
   done: number;
-  progress: number;
+  review: number;
+  translating: number;
   requested: number;
   pending: number;
   total: number;
 }
 
-export default function OverviewCharts({ done, progress, requested, pending, total }: OverviewChartsProps) {
+export default function OverviewCharts({ done, review, translating, requested, pending, total }: OverviewChartsProps) {
   const pct = total > 0 ? Math.round((done / total) * 1000) / 10 : 0;
 
   const pieData = [
     { name: "완료", value: done, color: "hsl(142, 60%, 42%)" },
-    { name: "진행중", value: progress, color: "hsl(45, 93%, 47%)" },
+    { name: "검수중", value: review, color: "hsl(37, 100%, 50%)" },
+    { name: "번역중", value: translating, color: "hsl(45, 93%, 47%)" },
     { name: "번역 신청", value: requested, color: "hsl(20, 90%, 56%)" },
     { name: "미번역", value: pending, color: "hsl(35, 15%, 78%)" },
   ].filter((d) => d.value > 0);
@@ -60,11 +62,18 @@ export default function OverviewCharts({ done, progress, requested, pending, tot
             <span className="text-sm text-foreground">완료</span>
             <span className="text-sm font-semibold text-foreground ml-auto">{done}</span>
           </div>
-          {progress > 0 && (
+          {review > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-status-review" />
+              <span className="text-sm text-foreground">검수중</span>
+              <span className="text-sm font-semibold text-foreground ml-auto">{review}</span>
+            </div>
+          )}
+          {translating > 0 && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-status-progress" />
-              <span className="text-sm text-foreground">진행중</span>
-              <span className="text-sm font-semibold text-foreground ml-auto">{progress}</span>
+              <span className="text-sm text-foreground">번역중</span>
+              <span className="text-sm font-semibold text-foreground ml-auto">{translating}</span>
             </div>
           )}
           {requested > 0 && (

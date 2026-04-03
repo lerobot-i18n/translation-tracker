@@ -126,7 +126,8 @@ export default function Index() {
           <div className="grid md:grid-cols-3 gap-4">
             <OverviewCharts
               done={stats.done}
-              progress={stats.progress}
+              review={stats.review}
+              translating={stats.translating}
               requested={stats.requested}
               pending={stats.pending}
               total={stats.total}

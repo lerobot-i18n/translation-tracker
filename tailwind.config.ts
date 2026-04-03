@@ -53,8 +53,12 @@ export default {
         status: {
           done: "hsl(var(--status-done))",
           "done-foreground": "hsl(var(--status-done-foreground))",
+          review: "hsl(var(--status-review))",
+          "review-foreground": "hsl(var(--status-review-foreground))",
           progress: "hsl(var(--status-progress))",
           "progress-foreground": "hsl(var(--status-progress-foreground))",
+          requested: "hsl(var(--status-requested))",
+          "requested-foreground": "hsl(var(--status-requested-foreground))",
           pending: "hsl(var(--status-pending))",
           "pending-foreground": "hsl(var(--status-pending-foreground))",
         },

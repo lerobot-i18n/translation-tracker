@@ -3,17 +3,19 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 interface OverviewChartsProps {
   done: number;
   progress: number;
+  requested: number;
   pending: number;
   total: number;
 }
 
-export default function OverviewCharts({ done, progress, pending, total }: OverviewChartsProps) {
+export default function OverviewCharts({ done, progress, requested, pending, total }: OverviewChartsProps) {
   const pct = total > 0 ? Math.round((done / total) * 1000) / 10 : 0;
 
   const pieData = [
-    { name: "완료", value: done, color: "hsl(142, 71%, 45%)" },
+    { name: "완료", value: done, color: "hsl(142, 60%, 42%)" },
     { name: "진행중", value: progress, color: "hsl(45, 93%, 47%)" },
-    { name: "미번역", value: pending, color: "hsl(220, 9%, 76%)" },
+    { name: "번역 신청", value: requested, color: "hsl(20, 90%, 56%)" },
+    { name: "미번역", value: pending, color: "hsl(35, 15%, 78%)" },
   ].filter((d) => d.value > 0);
 
   return (
@@ -63,6 +65,13 @@ export default function OverviewCharts({ done, progress, pending, total }: Overv
               <div className="w-3 h-3 rounded-full bg-status-progress" />
               <span className="text-sm text-foreground">진행중</span>
               <span className="text-sm font-semibold text-foreground ml-auto">{progress}</span>
+            </div>
+          )}
+          {requested > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-status-requested" />
+              <span className="text-sm text-foreground">번역 신청</span>
+              <span className="text-sm font-semibold text-foreground ml-auto">{requested}</span>
             </div>
           )}
           <div className="flex items-center gap-2">

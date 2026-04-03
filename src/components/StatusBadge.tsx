@@ -1,10 +1,11 @@
-export type TranslationStatus = "done" | "review" | "translating" | "pending";
+export type TranslationStatus = "done" | "review" | "translating" | "requested" | "pending";
 
 const config: Record<TranslationStatus, { label: string; bg: string; text: string }> = {
-  done: { label: "완료", bg: "bg-status-done", text: "text-status-done-foreground" },
-  review: { label: "검수중", bg: "bg-blue-500/15", text: "text-blue-500" },
-  translating: { label: "번역중", bg: "bg-status-progress", text: "text-status-progress-foreground" },
-  pending: { label: "미번역", bg: "bg-status-pending", text: "text-status-pending-foreground" },
+  done: { label: "완료", bg: "bg-status-done/15", text: "text-status-done" },
+  review: { label: "검수중", bg: "bg-status-review/15", text: "text-status-review" },
+  translating: { label: "번역중", bg: "bg-status-progress/15", text: "text-status-progress" },
+  requested: { label: "번역 신청", bg: "bg-status-requested/15", text: "text-status-requested" },
+  pending: { label: "미번역", bg: "bg-status-pending/15", text: "text-status-pending" },
 };
 
 export default function StatusBadge({ status }: { status: TranslationStatus }) {

@@ -10,6 +10,8 @@ interface FileEntry {
   assignee?: string;
   reviewer?: string;
   pr?: string;
+  volunteerUser?: string;
+  volunteerUrl?: string;
   enPath?: string;
   koPath?: string;
 }
@@ -76,7 +78,19 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                           <td className="px-4 py-2 font-mono text-xs text-foreground">{file.filename}</td>
                           <td className="px-4 py-2 text-foreground hidden sm:table-cell">{file.title}</td>
                           <td className="px-4 py-2 text-center"><StatusBadge status={file.status} /></td>
-                          <td className="px-4 py-2 text-center text-muted-foreground hidden sm:table-cell">{file.assignee || "-"}</td>
+                          <td className="px-4 py-2 text-center text-muted-foreground hidden sm:table-cell">
+                            {file.assignee ? file.assignee : file.volunteerUser ? (
+                              <a
+                                href={file.volunteerUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-status-requested hover:underline"
+                                title="댓글에서 번역 신청"
+                              >
+                                {file.volunteerUser}
+                              </a>
+                            ) : "-"}
+                          </td>
                           <td className="px-4 py-2 text-center hidden sm:table-cell">
                             {file.pr ? (
                               <a

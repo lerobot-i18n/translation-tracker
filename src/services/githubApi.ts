@@ -236,6 +236,55 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
   return items;
 }
 
+export interface CommentVolunteer {
+  filename: string;
+  commenter: string;
+  commentDate: string;
+  avatarUrl?: string;
+  commentUrl?: string;
+}
+
+export async function fetchCommentVolunteers(issueNumber = 3058): Promise<CommentVolunteer[]> {
+  const cacheKey = `lerobot-comment-volunteers-${issueNumber}`;
+  const cached = getCached<CommentVolunteer[]>(cacheKey);
+  if (cached) return cached;
+
+  // Fetch issue to identify the author (admin) — skip their comments
+  const issue = await fetchGitHub(`/repos/${REPO}/issues/${issueNumber}`);
+  const issueAuthor: string = issue.user?.login || "";
+
+  const comments = await fetchGitHub(`/repos/${REPO}/issues/${issueNumber}/comments?per_page=100`);
+  const volunteers: CommentVolunteer[] = [];
+  const seen = new Set<string>(); // track filename to keep first volunteer only
+
+  for (const comment of comments) {
+    const body: string = comment.body || "";
+    const commenter: string = comment.user?.login || "";
+    const avatarUrl: string = comment.user?.avatar_url || "";
+    const commentDate: string = comment.created_at || "";
+    const commentUrl: string = comment.html_url || "";
+
+    // Skip issue author (admin) comments — they mention filenames as examples/assignments
+    if (commenter === issueAuthor) continue;
+
+    // Skip comments that ARE checklists (those are handled by fetchIssueChecklist)
+    if (body.includes("- [x]") || body.includes("- [ ]")) continue;
+
+    // Find all .mdx filenames mentioned in the comment
+    const filenameMatches = body.matchAll(/\b([\w.-]+\.mdx)\b/g);
+    for (const match of filenameMatches) {
+      const filename = match[1];
+      if (!seen.has(filename)) {
+        seen.add(filename);
+        volunteers.push({ filename, commenter, commentDate, avatarUrl, commentUrl });
+      }
+    }
+  }
+
+  setCache(cacheKey, volunteers);
+  return volunteers;
+}
+
 export function getGitHubFileUrl(path: string): string {
   return `https://github.com/${REPO}/blob/main/${path}`;
 }

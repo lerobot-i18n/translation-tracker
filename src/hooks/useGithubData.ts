@@ -5,8 +5,10 @@ import {
   fetchRecentPRs,
   fetchFileCommits,
   fetchIssueChecklist,
+  fetchCommentVolunteers,
   TranslationFileStatus,
   IssueChecklistItem,
+  CommentVolunteer,
 } from "@/services/githubApi";
 
 export function useTranslationData() {
@@ -40,6 +42,15 @@ export function useRecentPRs() {
   });
 }
 
+export function useCommentVolunteers() {
+  return useQuery({
+    queryKey: ["github-comment-volunteers"],
+    queryFn: () => fetchCommentVolunteers(3058),
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  });
+}
+
 export function useFileCommits(path: string | undefined) {
   return useQuery({
     queryKey: ["github-file-commits", path],
@@ -49,20 +60,22 @@ export function useFileCommits(path: string | undefined) {
   });
 }
 
-// Merged hook: combines GitHub tree data with issue checklist
+// Merged hook: combines GitHub tree data with issue checklist + comment volunteers
 export function useMergedTranslationData() {
   const translationQuery = useTranslationData();
   const issueQuery = useIssueChecklist();
+  const volunteerQuery = useCommentVolunteers();
 
   const { data: githubData, isLoading: isLoadingGithub, error: githubError } = translationQuery;
   const { data: issueData, isLoading: isLoadingIssue, error: issueError } = issueQuery;
+  const { data: volunteerData } = volunteerQuery;
 
   const isLoading = isLoadingGithub || isLoadingIssue;
   const error = githubError || issueError;
 
   if (isLoading || !githubData) {
     return {
-      stats: { total: 0, done: 0, progress: 0, pending: 0 },
+      stats: { total: 0, done: 0, progress: 0, requested: 0, pending: 0 },
       sectionStats: [],
       isLoading,
       error,
@@ -73,7 +86,7 @@ export function useMergedTranslationData() {
 
   if (error && !githubData) {
     return {
-      stats: { total: 0, done: 0, progress: 0, pending: 0 },
+      stats: { total: 0, done: 0, progress: 0, requested: 0, pending: 0 },
       sectionStats: [],
       isLoading: false,
       error,
@@ -92,15 +105,26 @@ export function useMergedTranslationData() {
     }
   }
 
-  // Merge: GitHub file existence + issue checklist info
+  // Build comment volunteer map for quick lookup
+  const volunteerMap = new Map<string, CommentVolunteer>();
+  if (volunteerData) {
+    for (const v of volunteerData) {
+      volunteerMap.set(v.filename, v);
+    }
+  }
+
+  // Merge: GitHub file existence + issue checklist info + comment volunteers
   const mergedStatuses = statuses.map((s) => {
     const issueItem = issueMap.get(s.filename);
+    const volunteer = volunteerMap.get(s.filename);
 
-    let status = s.status; // "done" or "pending" from GitHub API
+    let status: string = s.status; // "done" or "pending" from GitHub API
     let assignee: string | undefined;
     let reviewer: string | undefined;
     let pr: string | undefined;
     let section = s.section;
+    let volunteerUser: string | undefined;
+    let volunteerUrl: string | undefined;
 
     if (issueItem) {
       // Issue data overrides section name
@@ -109,29 +133,40 @@ export function useMergedTranslationData() {
       reviewer = issueItem.reviewer;
       pr = issueItem.pr;
 
-      // 4-stage status:
+      // 5-stage status:
       // done: [x] checked OR file exists in ko/
       // review: [ ] unchecked, has assignee + has reviewer (🔍@user)
       // translating: [ ] unchecked, has assignee but no reviewer
-      // pending: [ ] unchecked, no assignee
+      // requested: [ ] unchecked, no assignee, but someone volunteered in comments
+      // pending: [ ] unchecked, no assignee, no volunteer
       if (s.status === "done" || issueItem.checked) {
         status = "done";
       } else if (issueItem.reviewer) {
         status = "review";
       } else if (issueItem.assignee) {
         status = "translating";
+      } else if (volunteer) {
+        status = "requested";
+        volunteerUser = `@${volunteer.commenter}`;
+        volunteerUrl = volunteer.commentUrl;
       } else {
         status = "pending";
       }
+    } else if (volunteer) {
+      // No checklist entry but someone volunteered
+      status = "requested";
+      volunteerUser = `@${volunteer.commenter}`;
+      volunteerUrl = volunteer.commentUrl;
     }
 
-    return { ...s, status, assignee, reviewer, pr, section };
+    return { ...s, status, assignee, reviewer, pr, section, volunteerUser, volunteerUrl };
   });
 
   const total = mergedStatuses.length;
   const done = mergedStatuses.filter((s) => s.status === "done").length;
   const review = mergedStatuses.filter((s) => s.status === "review").length;
   const translating = mergedStatuses.filter((s) => s.status === "translating").length;
+  const requested = mergedStatuses.filter((s) => s.status === "requested").length;
   const pending = mergedStatuses.filter((s) => s.status === "pending").length;
 
   // Group by section from issue checklist (preferred) or directory
@@ -181,21 +216,24 @@ export function useMergedTranslationData() {
       done: files.filter((f) => f.status === "done").length,
       review: files.filter((f) => f.status === "review").length,
       translating: files.filter((f) => f.status === "translating").length,
+      requested: files.filter((f) => f.status === "requested").length,
       pending: files.filter((f) => f.status === "pending").length,
       files: files.map((f) => ({
         filename: f.filename,
         title: (issueMap.get(f.filename)?.title) || f.filename.replace(/\.mdx$/, "").split("/").pop() || f.filename,
-        status: f.status as "done" | "review" | "translating" | "pending",
+        status: f.status as "done" | "review" | "translating" | "requested" | "pending",
         assignee: (f as any).assignee,
         reviewer: (f as any).reviewer,
         pr: (f as any).pr,
+        volunteerUser: (f as any).volunteerUser,
+        volunteerUrl: (f as any).volunteerUrl,
         enPath: f.enPath,
         koPath: f.koPath,
       })),
     }));
 
   return {
-    stats: { total, done, review, translating, pending },
+    stats: { total, done, review, translating, requested, pending },
     sectionStats,
     isLoading,
     error,

@@ -59,6 +59,9 @@ function setCache<T>(key: string, data: T) {
 async function fetchGitHub(endpoint: string) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Supabase configuration missing");
+  }
   const url = `${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(endpoint)}`;
   const res = await fetch(url, {
     headers: {
@@ -66,11 +69,16 @@ async function fetchGitHub(endpoint: string) {
       apikey: supabaseKey,
     },
   });
+  const text = await res.text();
   if (!res.ok) {
     if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
     throw new Error(`GitHub API error: ${res.status}`);
   }
-  return res.json();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Invalid JSON response from GitHub API`);
+  }
 }
 
 export async function fetchRepoTree(): Promise<{ enFiles: GitHubFileInfo[]; koFiles: GitHubFileInfo[] }> {

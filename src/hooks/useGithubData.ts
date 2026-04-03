@@ -6,7 +6,7 @@ import {
   fetchFileCommits,
   fetchIssueChecklist,
   fetchCommentVolunteers,
-  TranslationFileStatus,
+  fetchToctree,
   IssueChecklistItem,
   CommentVolunteer,
 } from "@/services/githubApi";
@@ -42,6 +42,15 @@ export function useRecentPRs() {
   });
 }
 
+export function useToctree() {
+  return useQuery({
+    queryKey: ["github-toctree"],
+    queryFn: () => fetchToctree(),
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  });
+}
+
 export function useCommentVolunteers() {
   return useQuery({
     queryKey: ["github-comment-volunteers"],
@@ -65,10 +74,12 @@ export function useMergedTranslationData() {
   const translationQuery = useTranslationData();
   const issueQuery = useIssueChecklist();
   const volunteerQuery = useCommentVolunteers();
+  const toctreeQuery = useToctree();
 
   const { data: githubData, isLoading: isLoadingGithub, error: githubError } = translationQuery;
   const { data: issueData, isLoading: isLoadingIssue, error: issueError } = issueQuery;
   const { data: volunteerData } = volunteerQuery;
+  const { data: toctreeData } = toctreeQuery;
 
   const isLoading = isLoadingGithub || isLoadingIssue;
   const error = githubError || issueError;
@@ -113,6 +124,16 @@ export function useMergedTranslationData() {
     }
   }
 
+  // Build toctree map: filename → section title
+  const toctreeMap = new Map<string, string>();
+  if (toctreeData) {
+    for (const sec of toctreeData) {
+      for (const file of sec.files) {
+        toctreeMap.set(file, sec.title);
+      }
+    }
+  }
+
   // Merge: GitHub file existence + issue checklist info + comment volunteers
   const mergedStatuses = statuses.map((s) => {
     const issueItem = issueMap.get(s.filename);
@@ -127,8 +148,8 @@ export function useMergedTranslationData() {
     let volunteerUrl: string | undefined;
 
     if (issueItem) {
-      // Issue data overrides section name
-      if (issueItem.section) section = issueItem.section;
+      // Toctree section takes priority, then issue checklist, then directory
+      section = toctreeMap.get(s.filename) || issueItem.section || section;
       assignee = issueItem.assignee;
       reviewer = issueItem.reviewer;
       pr = issueItem.pr;
@@ -152,11 +173,14 @@ export function useMergedTranslationData() {
       } else {
         status = "pending";
       }
-    } else if (volunteer) {
-      // No checklist entry but someone volunteered
-      status = "requested";
-      volunteerUser = `@${volunteer.commenter}`;
-      volunteerUrl = volunteer.commentUrl;
+    } else {
+      // Not in checklist — use toctree for section, fallback to directory path
+      section = toctreeMap.get(s.filename) || s.section;
+      if (volunteer) {
+        status = "requested";
+        volunteerUser = `@${volunteer.commenter}`;
+        volunteerUrl = volunteer.commentUrl;
+      }
     }
 
     return { ...s, status, assignee, reviewer, pr, section, volunteerUser, volunteerUrl };
@@ -170,14 +194,18 @@ export function useMergedTranslationData() {
   const pending = mergedStatuses.filter((s) => s.status === "pending").length;
 
   // Group by section from issue checklist (preferred) or directory
-  const sectionOrder = [
-    "Get Started", "Tutorials", "Datasets", "Policies", "Reward Models",
-    "Inference", "Simulation", "Robot Processors", "Robots",
-    "Teleoperators", "Sensors", "Supported Hardware", "Resources", "About",
-  ];
+  // Section order from toctree (dynamic) with fallback
+  const sectionOrder = toctreeData
+    ? toctreeData.map((s) => s.title)
+    : [
+        "Get Started", "Tutorials", "Datasets", "Policies", "Reward Models",
+        "Inference", "Simulation", "Benchmarks", "Robot Processors", "Robots",
+        "Teleoperators", "Sensors", "Supported Hardware", "Resources", "About",
+      ];
 
   const koLabels: Record<string, string> = {
     "Get Started": "시작하기",
+    "Get started": "시작하기",
     "Tutorials": "튜토리얼",
     "Datasets": "데이터셋",
     "Policies": "정책",
@@ -191,6 +219,7 @@ export function useMergedTranslationData() {
     "Supported Hardware": "지원 하드웨어",
     "Resources": "리소스",
     "About": "소개",
+    "Benchmarks": "벤치마크",
     "root": "기타",
   };
 

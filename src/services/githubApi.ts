@@ -285,6 +285,44 @@ export async function fetchCommentVolunteers(issueNumber = 3058): Promise<Commen
   return volunteers;
 }
 
+export interface TocSection {
+  title: string;
+  files: string[];
+}
+
+export async function fetchToctree(): Promise<TocSection[]> {
+  const cacheKey = "lerobot-toctree";
+  const cached = getCached<TocSection[]>(cacheKey);
+  if (cached) return cached;
+
+  const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/docs/source/_toctree.yml`);
+  if (!res.ok) return [];
+  const text = await res.text();
+
+  // Simple YAML parser for _toctree.yml structure
+  // Section titles have 2-space indent: "  title: ..."
+  // File titles have 4-space indent: "    title: ..."
+  const sections: TocSection[] = [];
+  let currentFiles: string[] = [];
+
+  for (const line of text.split("\n")) {
+    const localMatch = line.match(/^\s*-\s*local:\s*(\S+)/);
+    // Section-level title: exactly 2 spaces indent (not 4+)
+    const sectionTitleMatch = line.match(/^  title:\s*"?([^"]+)"?\s*$/);
+
+    if (localMatch) {
+      currentFiles.push(`${localMatch[1]}.mdx`);
+    }
+    if (sectionTitleMatch && currentFiles.length > 0) {
+      sections.push({ title: sectionTitleMatch[1], files: [...currentFiles] });
+      currentFiles = [];
+    }
+  }
+
+  setCache(cacheKey, sections);
+  return sections;
+}
+
 export function getGitHubFileUrl(path: string): string {
   return `https://github.com/${REPO}/blob/main/${path}`;
 }

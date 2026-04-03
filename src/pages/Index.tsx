@@ -15,6 +15,8 @@ export default function Index() {
     localStorage.removeItem("lerobot-github-data");
     localStorage.removeItem("lerobot-recent-prs");
     localStorage.removeItem("lerobot-comment-volunteers-3058");
+    localStorage.removeItem("lerobot-toctree");
+    localStorage.removeItem("lerobot-issue-3058");
     queryClient.invalidateQueries({ queryKey: ["github-translation-data"] });
     queryClient.invalidateQueries({ queryKey: ["github-recent-prs"] });
     queryClient.invalidateQueries({ queryKey: ["github-comment-volunteers"] });

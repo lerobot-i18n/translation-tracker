@@ -59,8 +59,6 @@ function setCache<T>(key: string, data: T) {
 async function fetchGitHub(endpoint: string) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    throw new Error("Supabase configuration missing");
-  }
   const url = `${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(endpoint)}`;
   const res = await fetch(url, {
     headers: {

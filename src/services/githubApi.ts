@@ -58,9 +58,11 @@ function setCache<T>(key: string, data: T) {
 }
 
 async function fetchGitHub(endpoint: string) {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers: { Accept: "application/vnd.github.v3+json" },
-  });
+  const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
+  const token = import.meta.env.VITE_GITHUB_TOKEN;
+  if (token) headers.Authorization = `token ${token}`;
+
+  const res = await fetch(`${API_BASE}${endpoint}`, { headers });
   if (!res.ok) {
     if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
     throw new Error(`GitHub API error: ${res.status}`);

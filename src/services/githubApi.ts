@@ -1,5 +1,6 @@
+import { supabase } from "@/integrations/supabase/client";
+
 const REPO = "huggingface/lerobot";
-const API_BASE = "https://api.github.com";
 const DOCS_BASE = "docs/source";
 const CACHE_KEY = "lerobot-github-data";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes

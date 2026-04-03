@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 const REPO = "huggingface/lerobot";
 const DOCS_BASE = "docs/source";
 const CACHE_KEY = "lerobot-github-data";

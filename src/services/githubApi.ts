@@ -308,7 +308,12 @@ export async function fetchToctree(): Promise<TocSection[]> {
   const cached = getCached<TocSection[]>(cacheKey);
   if (cached) return cached;
 
-  const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/docs/source/_toctree.yml`);
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const rawEndpoint = `/${REPO}/main/docs/source/_toctree.yml`;
+  const res = await fetch(`${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(rawEndpoint)}&raw=true`, {
+    headers: { Authorization: `Bearer ${supabaseKey}`, apikey: supabaseKey },
+  });
   if (!res.ok) return [];
   const text = await res.text();
 

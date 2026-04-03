@@ -56,26 +56,39 @@ function setCache<T>(key: string, data: T) {
   } catch {}
 }
 
+const API_BASE = "https://api.github.com";
+
 async function fetchGitHub(endpoint: string) {
+  // Try Supabase Edge Function proxy first (Lovable deployment)
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const url = `${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(endpoint)}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${supabaseKey}`,
-      apikey: supabaseKey,
-    },
-  });
-  const text = await res.text();
+
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const url = `${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(endpoint)}`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${supabaseKey}`, apikey: supabaseKey },
+      });
+      if (res.ok) {
+        const text = await res.text();
+        try { return JSON.parse(text); } catch { /* not valid JSON, fall through */ }
+      }
+    } catch {
+      // Proxy failed, fall through to direct API
+    }
+  }
+
+  // Fallback: direct GitHub API (local development)
+  const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
+  const token = import.meta.env.VITE_GITHUB_TOKEN;
+  if (token) headers.Authorization = `token ${token}`;
+
+  const res = await fetch(`${API_BASE}${endpoint}`, { headers });
   if (!res.ok) {
     if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
     throw new Error(`GitHub API error: ${res.status}`);
   }
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(`Invalid JSON response from GitHub API`);
-  }
+  return res.json();
 }
 
 export async function fetchRepoTree(): Promise<{ enFiles: GitHubFileInfo[]; koFiles: GitHubFileInfo[] }> {
@@ -305,14 +318,28 @@ export async function fetchToctree(): Promise<TocSection[]> {
   const cached = getCached<TocSection[]>(cacheKey);
   if (cached) return cached;
 
+  // Try Supabase proxy first, fallback to direct raw.githubusercontent.com
+  let text = "";
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const rawEndpoint = `/${REPO}/main/docs/source/_toctree.yml`;
-  const res = await fetch(`${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(rawEndpoint)}&raw=true`, {
-    headers: { Authorization: `Bearer ${supabaseKey}`, apikey: supabaseKey },
-  });
-  if (!res.ok) return [];
-  const text = await res.text();
+
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const rawEndpoint = `/${REPO}/main/docs/source/_toctree.yml`;
+      const res = await fetch(`${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(rawEndpoint)}&raw=true`, {
+        headers: { Authorization: `Bearer ${supabaseKey}`, apikey: supabaseKey },
+      });
+      if (res.ok) text = await res.text();
+    } catch {
+      // Proxy failed, fall through
+    }
+  }
+
+  if (!text) {
+    const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/docs/source/_toctree.yml`);
+    if (!res.ok) return [];
+    text = await res.text();
+  }
 
   // Simple YAML parser for _toctree.yml structure
   // Section titles have 2-space indent: "  title: ..."

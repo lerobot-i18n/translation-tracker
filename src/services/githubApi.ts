@@ -57,12 +57,6 @@ function setCache<T>(key: string, data: T) {
 }
 
 async function fetchGitHub(endpoint: string) {
-  const { data, error } = await supabase.functions.invoke("github-proxy", {
-    body: null,
-    method: "GET",
-  });
-
-  // supabase.functions.invoke doesn't support query params well, use fetch directly
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const url = `${supabaseUrl}/functions/v1/github-proxy?endpoint=${encodeURIComponent(endpoint)}`;

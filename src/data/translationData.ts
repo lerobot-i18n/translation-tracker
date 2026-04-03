@@ -180,7 +180,7 @@ export function getStats() {
   const allFiles = sections.flatMap((s) => s.files);
   const total = allFiles.length;
   const done = allFiles.filter((f) => f.status === "done").length;
-  const progress = allFiles.filter((f) => f.status === "outdated").length;
+  const progress = allFiles.filter((f) => f.status === "translating").length;
   const pending = allFiles.filter((f) => f.status === "pending").length;
   return { total, done, progress, pending };
 }

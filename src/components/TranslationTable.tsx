@@ -24,18 +24,67 @@ interface SectionEntry {
   files: FileEntry[];
 }
 
+const filterOptions: { value: TranslationStatus | "all"; label: string; className: string }[] = [
+  { value: "all", label: "전체", className: "bg-muted text-foreground" },
+  { value: "done", label: "완료", className: "bg-status-done/15 text-status-done" },
+  { value: "outdated", label: "업데이트 필요", className: "bg-destructive/15 text-destructive" },
+  { value: "review", label: "검수중", className: "bg-status-review/15 text-status-review" },
+  { value: "translating", label: "번역중", className: "bg-status-progress/15 text-status-progress" },
+  { value: "requested", label: "번역 신청", className: "bg-status-requested/15 text-status-requested" },
+  { value: "pending", label: "미번역", className: "bg-status-pending/15 text-status-pending" },
+];
+
 export default function TranslationTable({ sections }: { sections: SectionEntry[] }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [filter, setFilter] = useState<TranslationStatus | "all">("all");
 
   const toggle = (name: string) =>
     setCollapsed((prev) => ({ ...prev, [name]: !prev[name] }));
 
+  // Count files per status across all sections
+  const statusCounts: Record<string, number> = { all: 0 };
+  for (const section of sections) {
+    for (const file of section.files) {
+      statusCounts[file.status] = (statusCounts[file.status] || 0) + 1;
+      statusCounts.all++;
+    }
+  }
+
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-bold text-foreground">📋 섹션별 번역 현황</h2>
+
+      {/* Filter buttons */}
+      <div className="flex flex-wrap gap-2">
+        {filterOptions.map((opt) => {
+          const count = statusCounts[opt.value] || 0;
+          if (opt.value !== "all" && count === 0) return null;
+          const isActive = filter === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => setFilter(opt.value)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                isActive
+                  ? `${opt.className} ring-2 ring-primary/30`
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {opt.label}
+              <span className={`text-xs ${isActive ? "" : "text-muted-foreground"}`}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {sections.map((section) => {
-        const done = section.done;
-        const total = section.total;
+        const filteredFiles = filter === "all"
+          ? section.files
+          : section.files.filter((f) => f.status === filter);
+        if (filteredFiles.length === 0) return null;
+
+        const done = filteredFiles.filter((f) => f.status === "done" || f.status === "outdated").length;
+        const total = filteredFiles.length;
         const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         const isOpen = !collapsed[section.name];
         return (
@@ -72,7 +121,7 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                     </tr>
                   </thead>
                   <tbody>
-                    {section.files.map((file) => {
+                    {filteredFiles.map((file) => {
                       return (
                         <tr key={file.filename} className="border-t border-border hover:bg-muted/20 transition-colors">
                           <td className="px-4 py-2 font-mono text-xs text-foreground">{file.filename}</td>

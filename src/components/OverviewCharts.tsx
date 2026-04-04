@@ -2,6 +2,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface OverviewChartsProps {
   done: number;
+  outdated: number;
   review: number;
   translating: number;
   requested: number;
@@ -9,11 +10,12 @@ interface OverviewChartsProps {
   total: number;
 }
 
-export default function OverviewCharts({ done, review, translating, requested, pending, total }: OverviewChartsProps) {
-  const pct = total > 0 ? Math.round((done / total) * 1000) / 10 : 0;
+export default function OverviewCharts({ done, outdated, review, translating, requested, pending, total }: OverviewChartsProps) {
+  const pct = total > 0 ? Math.round(((done + outdated) / total) * 1000) / 10 : 0;
 
   const pieData = [
     { name: "완료", value: done, color: "hsl(142, 60%, 42%)" },
+    { name: "업데이트 필요", value: outdated, color: "hsl(0, 84%, 60%)" },
     { name: "검수중", value: review, color: "hsl(37, 100%, 50%)" },
     { name: "번역중", value: translating, color: "hsl(45, 93%, 47%)" },
     { name: "번역 신청", value: requested, color: "hsl(20, 90%, 56%)" },
@@ -62,6 +64,13 @@ export default function OverviewCharts({ done, review, translating, requested, p
             <span className="text-sm text-foreground">완료</span>
             <span className="text-sm font-semibold text-foreground ml-auto">{done}</span>
           </div>
+          {outdated > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-destructive" />
+              <span className="text-sm text-foreground">업데이트 필요</span>
+              <span className="text-sm font-semibold text-foreground ml-auto">{outdated}</span>
+            </div>
+          )}
           {review > 0 && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-status-review" />

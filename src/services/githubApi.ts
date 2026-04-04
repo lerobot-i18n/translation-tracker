@@ -139,6 +139,47 @@ export async function fetchFileCommits(path: string, maxCount = 1): Promise<GitH
   return result;
 }
 
+export interface OutdatedInfo {
+  filename: string;
+  enLastDate: string;
+  koLastDate: string;
+}
+
+export async function fetchOutdatedFiles(
+  doneFiles: Array<{ filename: string; enPath: string; koPath: string }>
+): Promise<OutdatedInfo[]> {
+  const cacheKey = "lerobot-outdated-check";
+  const cached = getCached<OutdatedInfo[]>(cacheKey);
+  if (cached) return cached;
+
+  const results: OutdatedInfo[] = [];
+
+  // Only check files that have both en and ko versions (done files)
+  for (const file of doneFiles) {
+    try {
+      const [enCommits, koCommits] = await Promise.all([
+        fetchFileCommits(file.enPath, 1),
+        fetchFileCommits(file.koPath, 1),
+      ]);
+
+      if (enCommits.length > 0 && koCommits.length > 0) {
+        const enDate = enCommits[0].date;
+        const koDate = koCommits[0].date;
+
+        // If English file was modified AFTER Korean file → outdated
+        if (new Date(enDate) > new Date(koDate)) {
+          results.push({ filename: file.filename, enLastDate: enDate, koLastDate: koDate });
+        }
+      }
+    } catch {
+      // Skip files that fail to fetch
+    }
+  }
+
+  setCache(cacheKey, results);
+  return results;
+}
+
 export async function fetchRecentPRs(): Promise<Array<{ number: number; title: string; author: string; authorAvatar: string; mergedAt: string; url: string }>> {
   const cacheKey = "lerobot-recent-prs";
   const cached = getCached<any[]>(cacheKey);

@@ -1,4 +1,4 @@
-import { FileText, CheckCircle2, Clock, CircleDashed, Search, RefreshCw, Wifi, WifiOff, AlertCircle, Loader2, Hand } from "lucide-react";
+import { FileText, CheckCircle2, Clock, CircleDashed, Search, RefreshCw, Wifi, WifiOff, AlertCircle, Loader2, Hand, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMergedTranslationData } from "@/hooks/useGithubData";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,21 +17,24 @@ export default function Index() {
     localStorage.removeItem("lerobot-comment-volunteers-3058");
     localStorage.removeItem("lerobot-toctree");
     localStorage.removeItem("lerobot-issue-3058");
+    localStorage.removeItem("lerobot-outdated-check");
     queryClient.invalidateQueries({ queryKey: ["github-translation-data"] });
     queryClient.invalidateQueries({ queryKey: ["github-recent-prs"] });
     queryClient.invalidateQueries({ queryKey: ["github-comment-volunteers"] });
+    queryClient.invalidateQueries({ queryKey: ["github-outdated"] });
   };
 
   const statCards = [
     { label: "전체 파일", value: stats.total, icon: FileText, className: "text-foreground" },
     { label: "번역 완료", value: stats.done, icon: CheckCircle2, className: "text-status-done" },
+    { label: "업데이트 필요", value: stats.outdated, icon: AlertTriangle, className: "text-destructive" },
     { label: "검수중", value: stats.review, icon: Search, className: "text-status-review" },
     { label: "번역중", value: stats.translating, icon: Clock, className: "text-status-progress" },
     { label: "번역 신청", value: stats.requested, icon: Hand, className: "text-status-requested" },
     { label: "미번역", value: stats.pending, icon: CircleDashed, className: "text-status-pending" },
   ];
 
-  const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 1000) / 10 : 0;
+  const pct = stats.total > 0 ? Math.round(((stats.done + stats.outdated) / stats.total) * 1000) / 10 : 0;
 
   return (
     <div className="space-y-6">
@@ -90,7 +93,7 @@ export default function Index() {
       {/* Loading skeleton */}
       {isLoading ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="rounded-lg border border-border bg-card p-4 animate-pulse">
                 <div className="h-8 bg-muted rounded w-16 mb-2" />
@@ -110,7 +113,7 @@ export default function Index() {
       ) : (
         <>
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
             {statCards.map((c) => (
               <div key={c.label} className="rounded-lg border border-border bg-card p-4 flex items-center gap-3">
                 <c.icon className={`h-7 w-7 ${c.className} shrink-0`} />
@@ -126,6 +129,7 @@ export default function Index() {
           <div className="grid md:grid-cols-3 gap-4">
             <OverviewCharts
               done={stats.done}
+              outdated={stats.outdated}
               review={stats.review}
               translating={stats.translating}
               requested={stats.requested}

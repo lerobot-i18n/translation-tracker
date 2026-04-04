@@ -6,9 +6,11 @@ import {
   fetchFileCommits,
   fetchIssueChecklist,
   fetchCommentVolunteers,
+  fetchOutdatedFiles,
   fetchToctree,
   IssueChecklistItem,
   CommentVolunteer,
+  OutdatedInfo,
 } from "@/services/githubApi";
 
 export function useTranslationData() {
@@ -81,12 +83,28 @@ export function useMergedTranslationData() {
   const { data: volunteerData } = volunteerQuery;
   const { data: toctreeData } = toctreeQuery;
 
+  // Find done files for outdated check
+  const doneFiles = githubData
+    ? githubData.statuses
+        .filter((s) => s.status === "done" && s.koPath)
+        .map((s) => ({ filename: s.filename, enPath: s.enPath, koPath: s.koPath! }))
+    : [];
+
+  const outdatedQuery = useQuery({
+    queryKey: ["github-outdated", doneFiles.map((f) => f.filename).join(",")],
+    queryFn: () => fetchOutdatedFiles(doneFiles),
+    enabled: doneFiles.length > 0,
+    staleTime: 10 * 60 * 1000, // 10 min cache (heavier check)
+    retry: 1,
+  });
+  const { data: outdatedData } = outdatedQuery;
+
   const isLoading = isLoadingGithub || isLoadingIssue;
   const error = githubError || issueError;
 
   if (isLoading || !githubData) {
     return {
-      stats: { total: 0, done: 0, progress: 0, requested: 0, pending: 0 },
+      stats: { total: 0, done: 0, outdated: 0, progress: 0, requested: 0, pending: 0 },
       sectionStats: [],
       isLoading,
       error,
@@ -97,7 +115,7 @@ export function useMergedTranslationData() {
 
   if (error && !githubData) {
     return {
-      stats: { total: 0, done: 0, progress: 0, requested: 0, pending: 0 },
+      stats: { total: 0, done: 0, outdated: 0, progress: 0, requested: 0, pending: 0 },
       sectionStats: [],
       isLoading: false,
       error,
@@ -121,6 +139,14 @@ export function useMergedTranslationData() {
   if (volunteerData) {
     for (const v of volunteerData) {
       volunteerMap.set(v.filename, v);
+    }
+  }
+
+  // Build outdated map for quick lookup
+  const outdatedMap = new Map<string, OutdatedInfo>();
+  if (outdatedData) {
+    for (const o of outdatedData) {
+      outdatedMap.set(o.filename, o);
     }
   }
 
@@ -183,11 +209,17 @@ export function useMergedTranslationData() {
       }
     }
 
+    // Check if done file is outdated (en modified after ko)
+    if (status === "done" && outdatedMap.has(s.filename)) {
+      status = "outdated";
+    }
+
     return { ...s, status, assignee, reviewer, pr, section, volunteerUser, volunteerUrl };
   });
 
   const total = mergedStatuses.length;
   const done = mergedStatuses.filter((s) => s.status === "done").length;
+  const outdated = mergedStatuses.filter((s) => s.status === "outdated").length;
   const review = mergedStatuses.filter((s) => s.status === "review").length;
   const translating = mergedStatuses.filter((s) => s.status === "translating").length;
   const requested = mergedStatuses.filter((s) => s.status === "requested").length;
@@ -243,6 +275,7 @@ export function useMergedTranslationData() {
       nameKo: koLabels[name] || name,
       total: files.length,
       done: files.filter((f) => f.status === "done").length,
+      outdated: files.filter((f) => f.status === "outdated").length,
       review: files.filter((f) => f.status === "review").length,
       translating: files.filter((f) => f.status === "translating").length,
       requested: files.filter((f) => f.status === "requested").length,
@@ -250,7 +283,7 @@ export function useMergedTranslationData() {
       files: files.map((f) => ({
         filename: f.filename,
         title: (issueMap.get(f.filename)?.title) || f.filename.replace(/\.mdx$/, "").split("/").pop() || f.filename,
-        status: f.status as "done" | "review" | "translating" | "requested" | "pending",
+        status: f.status as "done" | "outdated" | "review" | "translating" | "requested" | "pending",
         assignee: (f as any).assignee,
         reviewer: (f as any).reviewer,
         pr: (f as any).pr,
@@ -262,7 +295,7 @@ export function useMergedTranslationData() {
     }));
 
   return {
-    stats: { total, done, review, translating, requested, pending },
+    stats: { total, done, outdated, review, translating, requested, pending },
     sectionStats,
     isLoading,
     error,

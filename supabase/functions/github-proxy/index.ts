@@ -23,6 +23,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Only allow huggingface/lerobot endpoints to prevent SSRF
+    const ALLOWED_REPO = "/repos/huggingface/lerobot";
+    const ALLOWED_RAW = "/huggingface/lerobot";
+    const isAllowed = raw === "true"
+      ? endpoint.startsWith(ALLOWED_RAW)
+      : endpoint.startsWith(ALLOWED_REPO);
+
+    if (!isAllowed) {
+      return new Response(JSON.stringify({ error: "Endpoint not allowed" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const token = Deno.env.get("VITE_GITHUB_TOKEN");
     const headers: Record<string, string> = {
       Accept: "application/vnd.github.v3+json",

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Moon, Sun, Github, ExternalLink, RefreshCw, BarChart3, Users, BookOpen, HelpCircle, Menu, X } from "lucide-react";
+import { Moon, Sun, Github, ExternalLink, RefreshCw, BarChart3, Users, BookOpen, HelpCircle, Menu, X, Mail, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImg from "@/assets/lerobot-logo.png";
 import { useEffect, useState } from "react";
@@ -135,7 +135,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <span>Maintainer: <strong className="text-foreground">@pkooij</strong></span>
               <span>•</span>
-              <span>Lead: <strong className="text-foreground">@1wos</strong></span>
+              <span>Lead: <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="font-bold text-foreground hover:text-primary transition-colors">@1wos</a></span>
+              <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="GitHub">
+                <Github className="h-4 w-4" />
+              </a>
+              <a href="mailto:1wosomm1@gmail.com" className="hover:text-foreground transition-colors" title="Email">
+                <Mail className="h-4 w-4" />
+              </a>
+              <a href="https://www.linkedin.com/in/someee/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="LinkedIn">
+                <Linkedin className="h-4 w-4" />
+              </a>
             </div>
           </div>
         </div>

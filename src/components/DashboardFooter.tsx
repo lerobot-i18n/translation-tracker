@@ -1,4 +1,4 @@
-import { Github } from "lucide-react";
+import { Github, Mail, Linkedin } from "lucide-react";
 
 export default function DashboardFooter() {
   return (
@@ -14,10 +14,23 @@ export default function DashboardFooter() {
               Issue #3058
             </a>
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span>Maintainer: <strong className="text-foreground">@pkooij</strong></span>
-            <span>•</span>
-            <span>Lead translator: <strong className="text-foreground">@1wos</strong></span>
+          <div className="flex flex-col sm:flex-row items-center gap-3 text-xs">
+            <div className="flex items-center gap-3">
+              <span>Maintainer: <strong className="text-foreground">@pkooij</strong></span>
+              <span>•</span>
+              <span>Lead translator: <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">@1wos</a></span>
+            </div>
+            <div className="flex items-center gap-3">
+              <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="GitHub">
+                <Github className="h-5 w-5" />
+              </a>
+              <a href="mailto:1wosomm1@gmail.com" className="hover:text-foreground transition-colors" title="Email">
+                <Mail className="h-5 w-5" />
+              </a>
+              <a href="https://www.linkedin.com/in/someee/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="LinkedIn">
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </div>
           </div>
         </div>
       </div>

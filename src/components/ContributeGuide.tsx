@@ -38,7 +38,7 @@ export default function ContributeGuide() {
           </div>
           <div className="rounded-md bg-muted px-3 py-2">
             <span className="font-medium text-foreground">PR 제목 형식:</span>{" "}
-            <code className="text-primary font-mono text-xs">[i18n-KO] Translate &lt;filename&gt;.mdx</code>
+            <code className="text-primary font-mono text-xs">docs(i18n): add Korean translation for &lt;filename&gt;.mdx</code>
           </div>
           <div className="rounded-md bg-muted px-3 py-2">
             <span className="font-medium text-foreground">PR 본문에 추가:</span>{" "}
@@ -58,7 +58,7 @@ export default function ContributeGuide() {
             <p>$ cp docs/source/quickstart.mdx docs/source/ko/quickstart.mdx</p>
             <p>$ <span className="text-foreground"># 번역 작업</span></p>
             <p>$ pre-commit run</p>
-            <p>$ git add . && git commit -m "[i18n-KO] Translate quickstart.mdx"</p>
+            <p>$ git add . && git commit -m "docs(i18n): add Korean translation for quickstart.mdx"</p>
             <p>$ git push origin i18n-ko/quickstart</p>
           </div>
         </div>

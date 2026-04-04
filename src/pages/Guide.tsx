@@ -29,7 +29,7 @@ const steps = [
     icon: Rocket,
     emoji: "✨",
     title: "PR 제출",
-    desc: "[i18n-KO] Translate <filename>.mdx 형식으로 Pull Request를 제출합니다.",
+    desc: "docs(i18n): add Korean translation for <filename>.mdx 형식으로 PR을 제출합니다.",
   },
 ];
 
@@ -77,11 +77,11 @@ export default function Guide() {
           <h3 className="font-semibold text-foreground mb-3">PR 제목 형식</h3>
           <div className="rounded-md bg-muted p-3">
             <code className="text-sm text-primary font-mono">
-              [i18n-KO] Translate &lt;filename&gt;.mdx
+              docs(i18n): add Korean translation for &lt;filename&gt;.mdx
             </code>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            예: [i18n-KO] Translate installation.mdx
+            예: docs(i18n): add Korean translation for installation.mdx
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-5">

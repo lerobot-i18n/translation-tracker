@@ -184,22 +184,23 @@ export async function fetchOutdatedFiles(
   return results;
 }
 
-export async function fetchRecentPRs(langFilter = "ko/"): Promise<Array<{ number: number; title: string; author: string; authorAvatar: string; mergedAt: string; url: string }>> {
-  const cacheKey = `lerobot-recent-prs-${langFilter}`;
+export async function fetchRecentPRs(issueNumber = 3058): Promise<Array<{ number: number; title: string; author: string; authorAvatar: string; date: string; state: string; url: string }>> {
+  const cacheKey = `lerobot-recent-prs-${issueNumber}`;
   const cached = getCached<any[]>(cacheKey);
   if (cached) return cached;
 
   try {
-    const prs = await fetchGitHub(`/repos/${REPO}/pulls?state=closed&per_page=30&sort=updated&direction=desc`);
-    const i18nPRs = prs
-      .filter((pr: any) => pr.merged_at && (pr.title.includes("[i18n") || pr.title.toLowerCase().includes("translat") || pr.title.includes(langFilter)))
+    // Search PRs that reference our issue number
+    const data = await fetchGitHub(`/search/issues?q=repo:${REPO}+is:pr+${issueNumber}+in:body&per_page=20&sort=updated&order=desc`);
+    const i18nPRs = (data.items || [])
       .slice(0, 10)
       .map((pr: any) => ({
         number: pr.number,
         title: pr.title,
         author: pr.user.login,
         authorAvatar: pr.user.avatar_url,
-        mergedAt: pr.merged_at,
+        date: pr.pull_request?.merged_at || pr.updated_at,
+        state: pr.pull_request?.merged_at ? "merged" : pr.state,
         url: pr.html_url,
       }));
     setCache(cacheKey, i18nPRs);

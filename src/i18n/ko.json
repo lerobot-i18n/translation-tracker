@@ -1,0 +1,54 @@
+{
+  "dashboard": {
+    "title": "번역 현황 대시보드",
+    "subtitle": "LeRobot 문서 번역 진행 상황",
+    "totalFiles": "전체 파일",
+    "done": "번역 완료",
+    "outdated": "업데이트 필요",
+    "review": "검수중",
+    "translating": "번역중",
+    "requested": "번역 신청",
+    "pending": "미번역",
+    "overallProgress": "전체 진행률",
+    "refresh": "새로고침",
+    "loading": "로딩 중...",
+    "apiError": "GitHub API 오류",
+    "unknownError": "알 수 없는 오류",
+    "retry": "재시도"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "contributors": "참여자",
+    "glossary": "용어집",
+    "guide": "기여 가이드",
+    "subtitle": "번역 현황"
+  },
+  "status": {
+    "done": "완료",
+    "outdated": "업데이트 필요",
+    "review": "검수중",
+    "translating": "번역중",
+    "requested": "번역 신청",
+    "pending": "미번역"
+  },
+  "table": {
+    "title": "📋 섹션별 번역 현황",
+    "filename": "파일명",
+    "fileTitle": "제목",
+    "status": "상태",
+    "assignee": "담당자",
+    "detail": "상세 보기",
+    "commentVolunteer": "댓글에서 번역 신청",
+    "all": "전체"
+  },
+  "chart": {
+    "overallProgress": "전체 진행률",
+    "sectionProgress": "섹션별 진행률",
+    "total": "전체"
+  },
+  "activity": {
+    "title": "최근 활동",
+    "issueTracking": "번역 체크리스트 및 진행 현황",
+    "noPRs": "관련 PR이 없습니다."
+  }
+}

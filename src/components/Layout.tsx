@@ -1,18 +1,22 @@
 import { Link, useLocation } from "react-router-dom";
 import { Moon, Sun, Github, ExternalLink, RefreshCw, BarChart3, Users, BookOpen, HelpCircle, Menu, X, Mail, Linkedin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import logoImg from "@/assets/lerobot-logo.png";
 import { useEffect, useState } from "react";
 import LanguageSelector from "./LanguageSelector";
 
 const navItems = [
-  { path: "/", label: "대시보드", labelEn: "Dashboard", icon: BarChart3 },
-  { path: "/contributors", label: "참여자", labelEn: "Contributors", icon: Users },
-  { path: "/glossary", label: "용어집", labelEn: "Glossary", icon: BookOpen },
-  { path: "/guide", label: "기여 가이드", labelEn: "Guide", icon: HelpCircle },
+  { path: "/", key: "nav.dashboard", icon: BarChart3 },
+  { path: "/contributors", key: "nav.contributors", icon: Users },
+  { path: "/glossary", key: "nav.glossary", icon: BookOpen },
+  { path: "/guide", key: "nav.guide", icon: HelpCircle },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const { lang } = useLanguage();
+  const { t } = useTranslation();
   const location = useLocation();
   const [dark, setDark] = useState(() =>
     typeof window !== "undefined" && document.documentElement.classList.contains("dark")
@@ -40,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <h1 className="text-sm font-bold tracking-tight text-foreground leading-tight">
                   LeRobot i18n Tracker
                 </h1>
-                <p className="text-[10px] text-muted-foreground leading-tight">한국어 번역 현황</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{t("nav.subtitle")}</p>
               </div>
             </Link>
 
@@ -59,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     }`}
                   >
                     <item.icon className="h-4 w-4" />
-                    {item.label}
+                    {t(item.key)}
                   </Link>
                 );
               })}
@@ -103,8 +107,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     }`}
                   >
                     <item.icon className="h-4 w-4" />
-                    {item.label}
-                    <span className="text-xs text-muted-foreground">({item.labelEn})</span>
+                    {t(item.key)}
                   </Link>
                 );
               })}
@@ -125,11 +128,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <Github className="h-3.5 w-3.5" />
                 huggingface/lerobot
               </a>
-              <a href="https://github.com/huggingface/lerobot/issues/3058" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                Issue #3058
-              </a>
-              <a href="https://github.com/huggingface/lerobot/pull/3126" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                PR #3126
+              <a href={`https://github.com/huggingface/lerobot/issues/${lang.issueNumber}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                Issue #{lang.issueNumber}
               </a>
             </div>
             <div className="flex items-center gap-2">

@@ -1,19 +1,22 @@
+import { useTranslation } from "react-i18next";
+
 export type TranslationStatus = "done" | "outdated" | "review" | "translating" | "requested" | "pending";
 
-const config: Record<TranslationStatus, { label: string; bg: string; text: string }> = {
-  done: { label: "완료", bg: "bg-status-done/15", text: "text-status-done" },
-  outdated: { label: "업데이트 필요", bg: "bg-destructive/15", text: "text-destructive" },
-  review: { label: "검수중", bg: "bg-status-review/15", text: "text-status-review" },
-  translating: { label: "번역중", bg: "bg-status-progress/15", text: "text-status-progress" },
-  requested: { label: "번역 신청", bg: "bg-status-requested/15", text: "text-status-requested" },
-  pending: { label: "미번역", bg: "bg-status-pending/15", text: "text-status-pending" },
+const config: Record<TranslationStatus, { key: string; bg: string; text: string }> = {
+  done: { key: "status.done", bg: "bg-status-done/15", text: "text-status-done" },
+  outdated: { key: "status.outdated", bg: "bg-destructive/15", text: "text-destructive" },
+  review: { key: "status.review", bg: "bg-status-review/15", text: "text-status-review" },
+  translating: { key: "status.translating", bg: "bg-status-progress/15", text: "text-status-progress" },
+  requested: { key: "status.requested", bg: "bg-status-requested/15", text: "text-status-requested" },
+  pending: { key: "status.pending", bg: "bg-status-pending/15", text: "text-status-pending" },
 };
 
 export default function StatusBadge({ status }: { status: TranslationStatus }) {
+  const { t } = useTranslation();
   const c = config[status] || config.pending;
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
-      {c.label}
+      {t(c.key)}
     </span>
   );
 }

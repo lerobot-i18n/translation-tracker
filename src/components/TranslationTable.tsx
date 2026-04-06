@@ -2,6 +2,7 @@ import StatusBadge, { TranslationStatus } from "./StatusBadge";
 import { ChevronDown, FileText } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface FileEntry {
   filename: string;
@@ -24,17 +25,18 @@ interface SectionEntry {
   files: FileEntry[];
 }
 
-const filterOptions: { value: TranslationStatus | "all"; label: string; className: string }[] = [
-  { value: "all", label: "전체", className: "bg-muted text-foreground" },
-  { value: "done", label: "완료", className: "bg-status-done/15 text-status-done" },
-  { value: "outdated", label: "업데이트 필요", className: "bg-destructive/15 text-destructive" },
-  { value: "review", label: "검수중", className: "bg-status-review/15 text-status-review" },
-  { value: "translating", label: "번역중", className: "bg-status-progress/15 text-status-progress" },
-  { value: "requested", label: "번역 신청", className: "bg-status-requested/15 text-status-requested" },
-  { value: "pending", label: "미번역", className: "bg-status-pending/15 text-status-pending" },
+const filterConfig: { value: TranslationStatus | "all"; key: string; className: string }[] = [
+  { value: "all", key: "table.all", className: "bg-muted text-foreground" },
+  { value: "done", key: "status.done", className: "bg-status-done/15 text-status-done" },
+  { value: "outdated", key: "status.outdated", className: "bg-destructive/15 text-destructive" },
+  { value: "review", key: "status.review", className: "bg-status-review/15 text-status-review" },
+  { value: "translating", key: "status.translating", className: "bg-status-progress/15 text-status-progress" },
+  { value: "requested", key: "status.requested", className: "bg-status-requested/15 text-status-requested" },
+  { value: "pending", key: "status.pending", className: "bg-status-pending/15 text-status-pending" },
 ];
 
 export default function TranslationTable({ sections }: { sections: SectionEntry[] }) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<TranslationStatus | "all">("all");
 
@@ -52,11 +54,11 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
 
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-bold text-foreground">📋 섹션별 번역 현황</h2>
+      <h2 className="text-lg font-bold text-foreground">{t("table.title")}</h2>
 
       {/* Filter buttons */}
       <div className="flex flex-wrap gap-2">
-        {filterOptions.map((opt) => {
+        {filterConfig.map((opt) => {
           const count = statusCounts[opt.value] || 0;
           if (opt.value !== "all" && count === 0) return null;
           const isActive = filter === opt.value;
@@ -70,7 +72,7 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                   : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
-              {opt.label}
+              {t(opt.key)}
               <span className={`text-xs ${isActive ? "" : "text-muted-foreground"}`}>{count}</span>
             </button>
           );
@@ -112,10 +114,10 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-t border-border bg-muted/30">
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">파일명</th>
-                      <th className="px-4 py-2 text-left font-medium text-muted-foreground hidden sm:table-cell">제목</th>
-                      <th className="px-4 py-2 text-center font-medium text-muted-foreground">상태</th>
-                      <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">담당자</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground">{t("table.filename")}</th>
+                      <th className="px-4 py-2 text-left font-medium text-muted-foreground hidden sm:table-cell">{t("table.fileTitle")}</th>
+                      <th className="px-4 py-2 text-center font-medium text-muted-foreground">{t("table.status")}</th>
+                      <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">{t("table.assignee")}</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground hidden sm:table-cell">PR</th>
                       <th className="px-4 py-2 text-center font-medium text-muted-foreground w-10"></th>
                     </tr>
@@ -134,7 +136,7 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-status-requested hover:underline"
-                                title="댓글에서 번역 신청"
+                                title={t("table.commentVolunteer")}
                               >
                                 {file.volunteerUser}
                               </a>
@@ -158,7 +160,7 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                             <Link
                               to={`/file/${encodeURIComponent(file.filename)}`}
                               className="text-muted-foreground hover:text-primary transition-colors"
-                              title="상세 보기"
+                              title={t("table.detail")}
                             >
                               <FileText className="h-3.5 w-3.5 inline" />
                             </Link>

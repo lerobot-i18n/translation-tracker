@@ -41,8 +41,8 @@ export function useIssueChecklist() {
 export function useRecentPRs() {
   const { lang } = useLanguage();
   return useQuery({
-    queryKey: ["github-recent-prs", lang.issuePrLabel],
-    queryFn: () => fetchRecentPRs(lang.issuePrLabel),
+    queryKey: ["github-recent-prs", lang.issueNumber],
+    queryFn: () => fetchRecentPRs(lang.issueNumber),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });

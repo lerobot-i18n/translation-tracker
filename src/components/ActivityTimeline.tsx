@@ -1,22 +1,44 @@
 import { useRecentPRs } from "@/hooks/useGithubData";
-import { GitPullRequest, ExternalLink } from "lucide-react";
+import { GitPullRequest, ExternalLink, Pin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 export default function ActivityTimeline() {
   const { data: prs, isLoading } = useRecentPRs();
+  const { lang } = useLanguage();
+  const { t } = useTranslation();
 
-  // Fallback static data
-  const staticActivity = [
-    { number: 3126, title: "[i18n-KO] Translate index.mdx", author: "1wos", mergedAt: "2025-01-15", url: "https://github.com/huggingface/lerobot/pull/3126" },
-  ];
-
-  const items = prs && prs.length > 0 ? prs : staticActivity;
+  const items = prs && prs.length > 0 ? prs : [];
 
   return (
     <div className="rounded-lg border border-border bg-card p-5">
-      <h3 className="text-sm font-semibold text-foreground mb-4">최근 활동</h3>
+      <h3 className="text-sm font-semibold text-foreground mb-4">{t("activity.title")}</h3>
+
+      {/* Pinned issue link */}
+      <a
+        href={`https://github.com/huggingface/lerobot/issues/${lang.issueNumber}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-start gap-3 group hover:bg-primary/5 rounded-md p-2 -mx-1.5 mb-3 border border-primary/20 bg-primary/5 transition-colors"
+      >
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 shrink-0 mt-0.5">
+          <Pin className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-foreground font-medium truncate group-hover:text-primary transition-colors">
+            Issue #{lang.issueNumber} — {lang.label} Translation Tracking
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("activity.issueTracking")}
+          </p>
+        </div>
+        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+      </a>
+
+      {/* PR list */}
       {isLoading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
+          {[1, 2].map((i) => (
             <div key={i} className="animate-pulse flex gap-3">
               <div className="w-8 h-8 rounded-full bg-muted" />
               <div className="flex-1 space-y-1.5">
@@ -27,7 +49,7 @@ export default function ActivityTimeline() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">최근 번역 활동이 없습니다.</p>
+        <p className="text-sm text-muted-foreground">{t("activity.noPRs")}</p>
       ) : (
         <div className="space-y-3">
           {items.slice(0, 5).map((pr) => (
@@ -46,7 +68,10 @@ export default function ActivityTimeline() {
                   #{pr.number} {pr.title}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  @{pr.author} • {new Date(pr.mergedAt).toLocaleDateString("ko-KR")}
+                  @{pr.author} • {new Date(pr.date).toLocaleDateString("ko-KR")}
+                  {pr.state === "merged" && <span className="ml-1 text-status-done">merged</span>}
+                  {pr.state === "open" && <span className="ml-1 text-status-progress">open</span>}
+                  {pr.state === "closed" && <span className="ml-1 text-muted-foreground">closed</span>}
                 </p>
               </div>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1" />

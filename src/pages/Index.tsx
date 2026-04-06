@@ -2,6 +2,7 @@ import { FileText, CheckCircle2, Clock, CircleDashed, Search, RefreshCw, Wifi, W
 import { Button } from "@/components/ui/button";
 import { useMergedTranslationData } from "@/hooks/useGithubData";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import OverviewCharts from "@/components/OverviewCharts";
 import SectionBarChart from "@/components/SectionBarChart";
 import ActivityTimeline from "@/components/ActivityTimeline";
@@ -10,6 +11,7 @@ import TranslationTable from "@/components/TranslationTable";
 export default function Index() {
   const { stats, sectionStats, isLoading, error, isLive } = useMergedTranslationData();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const handleRefresh = () => {
     localStorage.removeItem("lerobot-github-data");
@@ -25,13 +27,13 @@ export default function Index() {
   };
 
   const statCards = [
-    { label: "전체 파일", value: stats.total, icon: FileText, className: "text-foreground" },
-    { label: "번역 완료", value: stats.done, icon: CheckCircle2, className: "text-status-done" },
-    { label: "업데이트 필요", value: stats.outdated, icon: AlertTriangle, className: "text-destructive" },
-    { label: "검수중", value: stats.review, icon: Search, className: "text-status-review" },
-    { label: "번역중", value: stats.translating, icon: Clock, className: "text-status-progress" },
-    { label: "번역 신청", value: stats.requested, icon: Hand, className: "text-status-requested" },
-    { label: "미번역", value: stats.pending, icon: CircleDashed, className: "text-status-pending" },
+    { label: t("dashboard.totalFiles"), value: stats.total, icon: FileText, className: "text-foreground" },
+    { label: t("dashboard.done"), value: stats.done, icon: CheckCircle2, className: "text-status-done" },
+    { label: t("dashboard.outdated"), value: stats.outdated, icon: AlertTriangle, className: "text-destructive" },
+    { label: t("dashboard.review"), value: stats.review, icon: Search, className: "text-status-review" },
+    { label: t("dashboard.translating"), value: stats.translating, icon: Clock, className: "text-status-progress" },
+    { label: t("dashboard.requested"), value: stats.requested, icon: Hand, className: "text-status-requested" },
+    { label: t("dashboard.pending"), value: stats.pending, icon: CircleDashed, className: "text-status-pending" },
   ];
 
   const pct = stats.total > 0 ? Math.round(((stats.done + stats.outdated) / stats.total) * 1000) / 10 : 0;
@@ -42,22 +44,22 @@ export default function Index() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-foreground">번역 현황 대시보드</h2>
-            <p className="text-sm text-muted-foreground">LeRobot 문서 한국어 번역 진행 상황</p>
+            <h2 className="text-xl font-bold text-foreground">{t("dashboard.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               {isLive ? (
                 <><Wifi className="h-3 w-3 text-status-done" /> Live</>
               ) : isLoading ? (
-                <><Loader2 className="h-3 w-3 animate-spin" /> 로딩 중...</>
+                <><Loader2 className="h-3 w-3 animate-spin" /> {t("dashboard.loading")}</>
               ) : (
                 <><WifiOff className="h-3 w-3" /> Offline</>
               )}
             </span>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isLoading ? "animate-spin" : ""}`} />
-              새로고침
+              {t("dashboard.refresh")}
             </Button>
           </div>
         </div>
@@ -67,10 +69,10 @@ export default function Index() {
           <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 border border-destructive/30 text-sm">
             <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
             <p className="text-foreground">
-              GitHub API 오류: {error instanceof Error ? error.message : "알 수 없는 오류"}
+              {t("dashboard.apiError")}: {error instanceof Error ? error.message : t("dashboard.unknownError")}
             </p>
             <Button variant="outline" size="sm" className="ml-auto shrink-0" onClick={handleRefresh}>
-              재시도
+              {t("dashboard.retry")}
             </Button>
           </div>
         )}
@@ -78,7 +80,7 @@ export default function Index() {
         {/* Global progress bar */}
         <div>
           <div className="flex items-center justify-between text-sm mb-1">
-            <span className="font-medium text-foreground">전체 진행률</span>
+            <span className="font-medium text-foreground">{t("dashboard.overallProgress")}</span>
             <span className="font-semibold text-primary">{stats.done}/{stats.total} ({pct}%)</span>
           </div>
           <div className="h-3 w-full rounded-full bg-muted overflow-hidden">

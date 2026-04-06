@@ -1,0 +1,54 @@
+{
+  "dashboard": {
+    "title": "Translation Dashboard",
+    "subtitle": "LeRobot Documentation Translation Progress",
+    "totalFiles": "Total Files",
+    "done": "Completed",
+    "outdated": "Outdated",
+    "review": "In Review",
+    "translating": "Translating",
+    "requested": "Requested",
+    "pending": "Untranslated",
+    "overallProgress": "Overall Progress",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "apiError": "GitHub API Error",
+    "unknownError": "Unknown error",
+    "retry": "Retry"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "contributors": "Contributors",
+    "glossary": "Glossary",
+    "guide": "Contribute",
+    "subtitle": "Translation Tracker"
+  },
+  "status": {
+    "done": "Done",
+    "outdated": "Outdated",
+    "review": "In Review",
+    "translating": "Translating",
+    "requested": "Requested",
+    "pending": "Untranslated"
+  },
+  "table": {
+    "title": "📋 Translation Status by Section",
+    "filename": "Filename",
+    "fileTitle": "Title",
+    "status": "Status",
+    "assignee": "Assignee",
+    "detail": "Detail",
+    "commentVolunteer": "Volunteered via comment",
+    "all": "All"
+  },
+  "chart": {
+    "overallProgress": "Overall Progress",
+    "sectionProgress": "Progress by Section",
+    "total": "Total"
+  },
+  "activity": {
+    "title": "Recent Activity",
+    "issueTracking": "Translation checklist & progress",
+    "noPRs": "No related PRs found."
+  }
+}

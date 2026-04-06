@@ -91,8 +91,9 @@ async function fetchGitHub(endpoint: string) {
   return res.json();
 }
 
-export async function fetchRepoTree(): Promise<{ enFiles: GitHubFileInfo[]; koFiles: GitHubFileInfo[] }> {
-  const cached = getCached<{ enFiles: GitHubFileInfo[]; koFiles: GitHubFileInfo[] }>(CACHE_KEY);
+export async function fetchRepoTree(langDir = "ko"): Promise<{ enFiles: GitHubFileInfo[]; translatedFiles: GitHubFileInfo[] }> {
+  const cacheKey = `${CACHE_KEY}-${langDir}`;
+  const cached = getCached<{ enFiles: GitHubFileInfo[]; translatedFiles: GitHubFileInfo[] }>(cacheKey);
   if (cached) return cached;
 
   const tree = await fetchGitHub(`/repos/${REPO}/git/trees/main?recursive=1`);
@@ -100,25 +101,28 @@ export async function fetchRepoTree(): Promise<{ enFiles: GitHubFileInfo[]; koFi
     (f: any) => f.type === "blob"
   );
 
+  const langPrefix = `${DOCS_BASE}/${langDir}/`;
+  // Collect all language directories to exclude from English files
+  const langDirs = ["ko", "zh", "ja", "fr", "de", "es", "pt"].map((d) => `${DOCS_BASE}/${d}/`);
+
   const enFiles: GitHubFileInfo[] = [];
-  const koFiles: GitHubFileInfo[] = [];
+  const translatedFiles: GitHubFileInfo[] = [];
 
   for (const f of allFiles) {
-    if (f.path.startsWith(`${DOCS_BASE}/`) && f.path.endsWith(".mdx") && !f.path.startsWith(`${DOCS_BASE}/ko/`)) {
+    if (f.path.startsWith(`${DOCS_BASE}/`) && f.path.endsWith(".mdx") && !langDirs.some((d) => f.path.startsWith(d))) {
       const relative = f.path.slice(DOCS_BASE.length + 1);
-      // Skip _toctree.yml or hidden files
       if (relative.startsWith("_") || relative.startsWith(".")) continue;
       enFiles.push({ path: f.path, filename: relative, sha: f.sha, size: f.size });
     }
-    if (f.path.startsWith(`${DOCS_BASE}/ko/`) && f.path.endsWith(".mdx")) {
-      const relative = f.path.slice(`${DOCS_BASE}/ko/`.length);
+    if (f.path.startsWith(langPrefix) && f.path.endsWith(".mdx")) {
+      const relative = f.path.slice(langPrefix.length);
       if (relative.startsWith("_") || relative.startsWith(".")) continue;
-      koFiles.push({ path: f.path, filename: relative, sha: f.sha, size: f.size });
+      translatedFiles.push({ path: f.path, filename: relative, sha: f.sha, size: f.size });
     }
   }
 
-  const result = { enFiles, koFiles };
-  setCache(CACHE_KEY, result);
+  const result = { enFiles, translatedFiles };
+  setCache(cacheKey, result);
   return result;
 }
 
@@ -180,15 +184,15 @@ export async function fetchOutdatedFiles(
   return results;
 }
 
-export async function fetchRecentPRs(): Promise<Array<{ number: number; title: string; author: string; authorAvatar: string; mergedAt: string; url: string }>> {
-  const cacheKey = "lerobot-recent-prs";
+export async function fetchRecentPRs(langFilter = "ko/"): Promise<Array<{ number: number; title: string; author: string; authorAvatar: string; mergedAt: string; url: string }>> {
+  const cacheKey = `lerobot-recent-prs-${langFilter}`;
   const cached = getCached<any[]>(cacheKey);
   if (cached) return cached;
 
   try {
     const prs = await fetchGitHub(`/repos/${REPO}/pulls?state=closed&per_page=30&sort=updated&direction=desc`);
     const i18nPRs = prs
-      .filter((pr: any) => pr.merged_at && (pr.title.includes("[i18n") || pr.title.toLowerCase().includes("translat") || pr.title.includes("ko/")))
+      .filter((pr: any) => pr.merged_at && (pr.title.includes("[i18n") || pr.title.toLowerCase().includes("translat") || pr.title.includes(langFilter)))
       .slice(0, 10)
       .map((pr: any) => ({
         number: pr.number,
@@ -205,8 +209,8 @@ export async function fetchRecentPRs(): Promise<Array<{ number: number; title: s
   }
 }
 
-export function buildTranslationStatus(enFiles: GitHubFileInfo[], koFiles: GitHubFileInfo[]): TranslationFileStatus[] {
-  const koMap = new Map(koFiles.map((f) => [f.filename, f]));
+export function buildTranslationStatus(enFiles: GitHubFileInfo[], translatedFiles: GitHubFileInfo[]): TranslationFileStatus[] {
+  const koMap = new Map(translatedFiles.map((f) => [f.filename, f]));
 
   return enFiles.map((en) => {
     const ko = koMap.get(en.filename);
@@ -281,11 +285,11 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
       const title = titleMatch ? titleMatch[1].replace(/\s*$/, "") : filename;
 
       // Extract assignee (translator)
-      const assigneeMatch = rest.match(/@(\w+)/);
+      const assigneeMatch = rest.match(/@([\w-]+)/);
       const assignee = assigneeMatch ? `@${assigneeMatch[1]}` : undefined;
 
       // Extract reviewer (🔍@user pattern)
-      const reviewerMatch = rest.match(/🔍@(\w+)/);
+      const reviewerMatch = rest.match(/🔍@([\w-]+)/);
       const reviewer = reviewerMatch ? `@${reviewerMatch[1]}` : undefined;
 
       // Extract PR number

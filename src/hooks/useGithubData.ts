@@ -12,14 +12,16 @@ import {
   CommentVolunteer,
   OutdatedInfo,
 } from "@/services/githubApi";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function useTranslationData() {
+  const { lang } = useLanguage();
   return useQuery({
-    queryKey: ["github-translation-data"],
+    queryKey: ["github-translation-data", lang.dir],
     queryFn: async () => {
-      const { enFiles, koFiles } = await fetchRepoTree();
-      const statuses = buildTranslationStatus(enFiles, koFiles);
-      return { enFiles, koFiles, statuses };
+      const { enFiles, translatedFiles } = await fetchRepoTree(lang.dir);
+      const statuses = buildTranslationStatus(enFiles, translatedFiles);
+      return { enFiles, translatedFiles, statuses };
     },
     staleTime: 5 * 60 * 1000,
     retry: 2,
@@ -27,18 +29,20 @@ export function useTranslationData() {
 }
 
 export function useIssueChecklist() {
+  const { lang } = useLanguage();
   return useQuery({
-    queryKey: ["github-issue-checklist"],
-    queryFn: () => fetchIssueChecklist(3058),
+    queryKey: ["github-issue-checklist", lang.issueNumber],
+    queryFn: () => fetchIssueChecklist(lang.issueNumber),
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });
 }
 
 export function useRecentPRs() {
+  const { lang } = useLanguage();
   return useQuery({
-    queryKey: ["github-recent-prs"],
-    queryFn: fetchRecentPRs,
+    queryKey: ["github-recent-prs", lang.issuePrLabel],
+    queryFn: () => fetchRecentPRs(lang.issuePrLabel),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
@@ -54,9 +58,10 @@ export function useToctree() {
 }
 
 export function useCommentVolunteers() {
+  const { lang } = useLanguage();
   return useQuery({
-    queryKey: ["github-comment-volunteers"],
-    queryFn: () => fetchCommentVolunteers(3058),
+    queryKey: ["github-comment-volunteers", lang.issueNumber],
+    queryFn: () => fetchCommentVolunteers(lang.issueNumber),
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });

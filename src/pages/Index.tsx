@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useMergedTranslationData } from "@/hooks/useGithubData";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/contexts/LanguageContext";
 import OverviewCharts from "@/components/OverviewCharts";
 import SectionBarChart from "@/components/SectionBarChart";
 import ActivityTimeline from "@/components/ActivityTimeline";
@@ -12,6 +13,7 @@ export default function Index() {
   const { stats, sectionStats, isLoading, error, isLive } = useMergedTranslationData();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const { lang } = useLanguage();
 
   const handleRefresh = () => {
     localStorage.removeItem("lerobot-github-data");
@@ -44,8 +46,14 @@ export default function Index() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-foreground">{t("dashboard.title")}</h2>
-            <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <span className="text-2xl leading-none">{lang.flag}</span>
+              <span>{lang.label}</span>
+              <span className="text-muted-foreground font-normal">— {t("dashboard.title")}</span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("dashboard.subtitle")} · Issue #{lang.issueNumber}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-xs text-muted-foreground">

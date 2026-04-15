@@ -1,0 +1,54 @@
+{
+  "dashboard": {
+    "title": "翻譯儀表板",
+    "subtitle": "LeRobot 文件翻譯進度",
+    "totalFiles": "總檔案數",
+    "done": "已完成",
+    "outdated": "需更新",
+    "review": "審查中",
+    "translating": "翻譯中",
+    "requested": "已申請",
+    "pending": "未翻譯",
+    "overallProgress": "總進度",
+    "refresh": "重新整理",
+    "loading": "載入中...",
+    "apiError": "GitHub API 錯誤",
+    "unknownError": "未知錯誤",
+    "retry": "重試"
+  },
+  "nav": {
+    "dashboard": "儀表板",
+    "contributors": "貢獻者",
+    "glossary": "詞彙表",
+    "guide": "參與貢獻",
+    "subtitle": "翻譯追蹤系統"
+  },
+  "status": {
+    "done": "完成",
+    "outdated": "需更新",
+    "review": "審查中",
+    "translating": "翻譯中",
+    "requested": "已申請",
+    "pending": "未翻譯"
+  },
+  "table": {
+    "title": "📋 各章節翻譯狀態",
+    "filename": "檔案名稱",
+    "fileTitle": "標題",
+    "status": "狀態",
+    "assignee": "負責人",
+    "detail": "詳情",
+    "commentVolunteer": "透過留言申請",
+    "all": "全部"
+  },
+  "chart": {
+    "overallProgress": "總進度",
+    "sectionProgress": "各章節進度",
+    "total": "總計"
+  },
+  "activity": {
+    "title": "最近活動",
+    "issueTracking": "翻譯清單與進度",
+    "noPRs": "尚無相關的 PR。"
+  }
+}

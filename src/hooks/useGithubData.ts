@@ -78,6 +78,7 @@ export function useFileCommits(path: string | undefined) {
 
 // Merged hook: combines GitHub tree data with issue checklist + comment volunteers
 export function useMergedTranslationData() {
+  const { lang } = useLanguage();
   const translationQuery = useTranslationData();
   const issueQuery = useIssueChecklist();
   const volunteerQuery = useCommentVolunteers();
@@ -132,18 +133,54 @@ export function useMergedTranslationData() {
   const { statuses } = githubData;
 
   // Build issue checklist map for quick lookup
+  // For languages with checklistTag (e.g. zh-Hant/zh-Hans sharing one issue),
+  // only include items that have the matching language tag in their [Hant / Hans] marker.
   const issueMap = new Map<string, IssueChecklistItem>();
   if (issueData) {
     for (const item of issueData) {
-      issueMap.set(item.filename, item);
+      if (lang.checklistTag) {
+        // Only include if this item has the matching language tag
+        if (item.langTags && item.langTags.some((t) => t.toLowerCase() === lang.checklistTag!.toLowerCase())) {
+          issueMap.set(item.filename, item);
+        }
+      } else {
+        // No filtering needed (Korean case)
+        issueMap.set(item.filename, item);
+      }
     }
   }
 
   // Build comment volunteer map for quick lookup
+  // For shared issues with checklistTag (zh-Hant/zh-Hans), infer each volunteer's language
+  // by looking at their existing checklist assignments. If they primarily work on one language,
+  // only count their volunteer comments for that language tab.
   const volunteerMap = new Map<string, CommentVolunteer>();
   if (volunteerData) {
+    // Build user → primary language tag map from checklist assignments
+    const userLangMap = new Map<string, string>(); // username → checklistTag they work on
+    if (issueData && lang.checklistTag) {
+      for (const item of issueData) {
+        if (!item.assignee || !item.langTags || item.langTags.length === 0) continue;
+        const username = item.assignee.replace("@", "").toLowerCase();
+        // Use the first language tag found for this user
+        if (!userLangMap.has(username)) {
+          userLangMap.set(username, item.langTags[0]);
+        }
+      }
+    }
+
     for (const v of volunteerData) {
-      volunteerMap.set(v.filename, v);
+      if (lang.checklistTag) {
+        // Priority: detected langTag from comment body > inferred from checklist assignments
+        const detectedLang = v.langTag || userLangMap.get(v.commenter.toLowerCase());
+        if (detectedLang && detectedLang.toLowerCase() === lang.checklistTag.toLowerCase()) {
+          volunteerMap.set(v.filename, v);
+        }
+        // Skip if no language info found (avoid incorrect attribution across both tabs)
+      } else {
+        // Korean case: no filtering
+        volunteerMap.set(v.filename, v);
+      }
     }
   }
 
@@ -185,15 +222,19 @@ export function useMergedTranslationData() {
       reviewer = issueItem.reviewer;
       pr = issueItem.pr;
 
-      // 5-stage status:
-      // done: [x] checked OR file exists in ko/
-      // review: [ ] unchecked, has assignee + has reviewer (🔍@user)
-      // translating: [ ] unchecked, has assignee but no reviewer
-      // requested: [ ] unchecked, no assignee, but someone volunteered in comments
-      // pending: [ ] unchecked, no assignee, no volunteer
+      // Status logic based on actual PR workflow:
+      // done:        [x] checked (PR merged)
+      // review:      [ ] unchecked + PR submitted (waiting for reviewer)
+      // translating: [ ] unchecked + has assignee but no PR
+      // requested:   [ ] unchecked + no assignee, but volunteer in comments
+      // pending:     [ ] unchecked + nothing
       if (s.status === "done" || issueItem.checked) {
         status = "done";
+      } else if (issueItem.pr) {
+        // PR submitted but not yet merged → in review
+        status = "review";
       } else if (issueItem.reviewer) {
+        // Explicit reviewer tag (legacy 🔍@ pattern)
         status = "review";
       } else if (issueItem.assignee) {
         status = "translating";

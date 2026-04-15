@@ -1,0 +1,54 @@
+{
+  "dashboard": {
+    "title": "翻译仪表盘",
+    "subtitle": "LeRobot 文档翻译进度",
+    "totalFiles": "文件总数",
+    "done": "已完成",
+    "outdated": "需更新",
+    "review": "审核中",
+    "translating": "翻译中",
+    "requested": "已申请",
+    "pending": "未翻译",
+    "overallProgress": "总进度",
+    "refresh": "刷新",
+    "loading": "加载中...",
+    "apiError": "GitHub API 错误",
+    "unknownError": "未知错误",
+    "retry": "重试"
+  },
+  "nav": {
+    "dashboard": "仪表盘",
+    "contributors": "贡献者",
+    "glossary": "术语表",
+    "guide": "参与贡献",
+    "subtitle": "翻译追踪系统"
+  },
+  "status": {
+    "done": "完成",
+    "outdated": "需更新",
+    "review": "审核中",
+    "translating": "翻译中",
+    "requested": "已申请",
+    "pending": "未翻译"
+  },
+  "table": {
+    "title": "📋 各章节翻译状态",
+    "filename": "文件名",
+    "fileTitle": "标题",
+    "status": "状态",
+    "assignee": "负责人",
+    "detail": "详情",
+    "commentVolunteer": "通过评论申请",
+    "all": "全部"
+  },
+  "chart": {
+    "overallProgress": "总进度",
+    "sectionProgress": "各章节进度",
+    "total": "总计"
+  },
+  "activity": {
+    "title": "最近活动",
+    "issueTracking": "翻译清单与进度",
+    "noPRs": "暂无相关的 PR。"
+  }
+}

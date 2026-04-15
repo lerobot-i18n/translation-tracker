@@ -125,6 +125,22 @@ export default function Glossary() {
         </div>
       </div>
 
+      {/* Translation guide link */}
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-5">
+        <p className="text-sm text-foreground font-medium mb-1">📖 전체 번역 가이드</p>
+        <p className="text-xs text-muted-foreground mb-2">
+          용어 통일, 문체, 포맷 등 상세 번역 규칙이 정리되어 있어요.
+        </p>
+        <a
+          href="https://github.com/1wos/lerobot-korean-watch/blob/main/docs/TRANSLATION_GUIDE_KO.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          번역 가이드 문서 보기 →
+        </a>
+      </div>
+
       {/* Community note */}
       <div className="rounded-lg border border-dashed border-border bg-muted/20 p-5">
         <p className="text-sm text-foreground font-medium mb-1">🔒 용어 등록/수정 제안</p>

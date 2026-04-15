@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMergedTranslationData, useIssueChecklist } from "@/hooks/useGithubData";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Contributor {
   username: string;
@@ -19,17 +20,27 @@ const roleBadgeClass: Record<string, string> = {
 };
 
 export default function Contributors() {
+  const { lang } = useLanguage();
   const { isLoading: isLoadingData } = useMergedTranslationData();
   const { data: issueData, isLoading: isLoadingIssue } = useIssueChecklist();
 
   const isLoading = isLoadingData || isLoadingIssue;
 
   // Build contributors from issue checklist data
+  // Filter by language tag if the current language has checklistTag (zh-Hant or zh-Hans)
   const contributorMap = new Map<string, Contributor>();
 
   if (issueData) {
     for (const item of issueData) {
       if (!item.assignee) continue;
+
+      // Filter by language tag for zh-Hant / zh-Hans separation
+      if (lang.checklistTag) {
+        if (!item.langTags || !item.langTags.some((t) => t.toLowerCase() === lang.checklistTag!.toLowerCase())) {
+          continue;
+        }
+      }
+
       const username = item.assignee.replace("@", "");
 
       if (!contributorMap.has(username)) {
@@ -51,12 +62,12 @@ export default function Contributors() {
     }
   }
 
-  // Determine roles based on contribution count
+  // Determine roles: Issue author = Lead Translator, others by contribution count
   for (const [, contributor] of contributorMap) {
     const total = contributor.completedFiles.length + contributor.inProgressFiles.length;
-    if (total >= 5) {
+    if (contributor.username.toLowerCase() === lang.leadUsername.toLowerCase()) {
       contributor.role = "Lead Translator";
-    } else if (contributor.completedFiles.length > 0) {
+    } else if (total >= 3 || contributor.completedFiles.length > 0) {
       contributor.role = "Translator";
     }
   }
@@ -72,7 +83,7 @@ export default function Contributors() {
           👥 참여자 (Contributors)
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          LeRobot 한국어 번역에 기여한 분들입니다
+          {lang.flag} LeRobot {lang.label} 번역에 기여한 분들입니다
         </p>
       </div>
 
@@ -175,12 +186,12 @@ export default function Contributors() {
           기여 가이드를 확인하고 미번역 파일을 선택하세요!
         </p>
         <a
-          href="https://github.com/huggingface/lerobot/issues/3058"
+          href={`https://github.com/huggingface/lerobot/issues/${lang.issueNumber}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
-          Issue #3058에서 참여하기
+          Issue #{lang.issueNumber}에서 참여하기
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>

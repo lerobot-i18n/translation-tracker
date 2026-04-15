@@ -3,6 +3,7 @@ import { ChevronDown, FileText } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FileEntry {
   filename: string;
@@ -37,6 +38,7 @@ const filterConfig: { value: TranslationStatus | "all"; key: string; className: 
 
 export default function TranslationTable({ sections }: { sections: SectionEntry[] }) {
   const { t } = useTranslation();
+  const { lang } = useLanguage();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<TranslationStatus | "all">("all");
 
@@ -130,14 +132,20 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
                           <td className="px-4 py-2 text-foreground hidden sm:table-cell">{file.title}</td>
                           <td className="px-4 py-2 text-center"><StatusBadge status={file.status} /></td>
                           <td className="px-4 py-2 text-center text-muted-foreground hidden sm:table-cell">
-                            {file.assignee ? file.assignee : file.volunteerUser ? (
+                            {file.assignee ? (
+                              <span className="inline-flex items-center gap-1">
+                                <span className="text-sm leading-none" title={lang.label}>{lang.flag}</span>
+                                {file.assignee}
+                              </span>
+                            ) : file.volunteerUser ? (
                               <a
                                 href={file.volunteerUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-status-requested hover:underline"
+                                className="inline-flex items-center gap-1 text-status-requested hover:underline"
                                 title={t("table.commentVolunteer")}
                               >
+                                <span className="text-sm leading-none" title={lang.label}>{lang.flag}</span>
                                 {file.volunteerUser}
                               </a>
                             ) : "-"}

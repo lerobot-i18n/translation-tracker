@@ -241,6 +241,7 @@ export interface IssueChecklistItem {
   reviewer?: string;
   pr?: string;
   section: string;
+  langTags?: string[]; // e.g. ["zh-Hant", "zh-Hans"] from [zh-Hant / zh-Hans] markers
 }
 
 export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChecklistItem[]> {
@@ -281,8 +282,8 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
       const filename = checkMatch[2];
       const rest = checkMatch[3] || "";
 
-      // Extract title (before first parenthesis or @)
-      const titleMatch = rest.match(/^([^(@]*)/);
+      // Extract title (before first parenthesis or @ or lang tag)
+      const titleMatch = rest.match(/^([^(@\[]*)/);
       const title = titleMatch ? titleMatch[1].replace(/\s*$/, "") : filename;
 
       // Extract assignee (translator)
@@ -297,7 +298,22 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
       const prMatch = rest.match(/#(\d+)/);
       const pr = prMatch ? `#${prMatch[1]}` : undefined;
 
-      items.push({ filename, title, checked, assignee, reviewer, pr, section: currentSection });
+      // Extract language tags like [zh-Hant / zh-Hans], [zh-Hant / ], [ / zh-Hans]
+      const langTagMatch = rest.match(/\[([^\]]+)\]/);
+      const langTags: string[] = [];
+      if (langTagMatch) {
+        const tagContent = langTagMatch[1];
+        // Split by / and trim
+        const parts = tagContent.split("/").map((p) => p.trim()).filter((p) => p.length > 0);
+        // Only accept recognized language tags
+        for (const p of parts) {
+          if (/^zh-(Hant|Hans)$/i.test(p) || /^ko$/i.test(p)) {
+            langTags.push(p);
+          }
+        }
+      }
+
+      items.push({ filename, title, checked, assignee, reviewer, pr, section: currentSection, langTags: langTags.length > 0 ? langTags : undefined });
     }
   }
 
@@ -311,6 +327,7 @@ export interface CommentVolunteer {
   commentDate: string;
   avatarUrl?: string;
   commentUrl?: string;
+  langTag?: string; // detected language: "zh-Hant", "zh-Hans", or undefined
 }
 
 export async function fetchCommentVolunteers(issueNumber = 3058): Promise<CommentVolunteer[]> {
@@ -326,6 +343,27 @@ export async function fetchCommentVolunteers(issueNumber = 3058): Promise<Commen
   const volunteers: CommentVolunteer[] = [];
   const seen = new Set<string>(); // track filename to keep first volunteer only
 
+  // First pass: track which language each commenter prefers based on what they say
+  // Look for explicit mentions of zh-Hant, zh-Hans, Traditional, Simplified, 繁體, 简体, etc.
+  const userLangPreference = new Map<string, string>();
+  for (const comment of comments) {
+    const body: string = (comment.body || "").toLowerCase();
+    const commenter: string = comment.user?.login || "";
+    if (commenter === issueAuthor) continue;
+    if (body.includes("- [x]") || body.includes("- [ ]")) continue;
+
+    // Detect language preference
+    const hasHant = /zh-hant|traditional chinese|繁體|繁体|zh_hant/i.test(comment.body || "");
+    const hasHans = /zh-hans|simplified chinese|简体|簡體|zh_hans/i.test(comment.body || "");
+
+    if (hasHant && !hasHans) {
+      userLangPreference.set(commenter.toLowerCase(), "zh-Hant");
+    } else if (hasHans && !hasHant) {
+      userLangPreference.set(commenter.toLowerCase(), "zh-Hans");
+    }
+  }
+
+  // Second pass: collect volunteers with detected language
   for (const comment of comments) {
     const body: string = comment.body || "";
     const commenter: string = comment.user?.login || "";
@@ -339,13 +377,15 @@ export async function fetchCommentVolunteers(issueNumber = 3058): Promise<Commen
     // Skip comments that ARE checklists (those are handled by fetchIssueChecklist)
     if (body.includes("- [x]") || body.includes("- [ ]")) continue;
 
+    const langTag = userLangPreference.get(commenter.toLowerCase());
+
     // Find all .mdx filenames mentioned in the comment
     const filenameMatches = body.matchAll(/\b([\w.-]+\.mdx)\b/g);
     for (const match of filenameMatches) {
       const filename = match[1];
       if (!seen.has(filename)) {
         seen.add(filename);
-        volunteers.push({ filename, commenter, commentDate, avatarUrl, commentUrl });
+        volunteers.push({ filename, commenter, commentDate, avatarUrl, commentUrl, langTag });
       }
     }
   }

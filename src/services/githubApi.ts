@@ -59,7 +59,7 @@ function setCache<T>(key: string, data: T) {
 const API_BASE = "https://api.github.com";
 
 async function fetchGitHub(endpoint: string) {
-  // Try Supabase Edge Function proxy first (Lovable deployment)
+  // Try Supabase Edge Function proxy first (recommended for production)
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
   const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 

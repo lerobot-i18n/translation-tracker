@@ -9,7 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://lerobot-korean-watch.lovable.app">Live Dashboard</a> &middot;
   <a href="https://github.com/huggingface/lerobot/issues/3058">Korean Issue #3058</a> &middot;
   <a href="https://github.com/huggingface/lerobot/issues/3290">Chinese Issue #3290</a>
 </p>
@@ -42,7 +41,7 @@ This project is referenced in the [official LeRobot v0.6.0 roadmap](https://gith
 - **Backend**: Supabase Edge Function (GitHub API proxy)
 - **State**: TanStack React Query (with 5-min cache)
 - **i18n**: react-i18next
-- **Hosting**: Lovable
+- **Hosting**: Vercel
 
 ## Getting Started
 
@@ -54,20 +53,25 @@ This project is referenced in the [official LeRobot v0.6.0 roadmap](https://gith
 ### Installation
 
 ```bash
-git clone https://github.com/1wos/lerobot-korean-watch.git
-cd lerobot-korean-watch
+git clone https://github.com/lerobot-i18n/translation-tracker.git
+cd translation-tracker
 npm install
 ```
 
 ### Environment Variables
 
-Create a `.env` file (optional, increases GitHub API rate limit):
+Create a `.env` file with your Supabase credentials:
 
 ```env
-VITE_GITHUB_TOKEN=your_github_token_here
+# Required — Supabase Edge Function proxy for GitHub API
+VITE_SUPABASE_URL=https://<your-project>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-anon-key>
+
+# Optional — increases GitHub API rate limit (60/hr → 5,000/hr)
+VITE_GITHUB_TOKEN=<your-github-token>
 ```
 
-> No scopes needed — it's for public repo rate limiting only (60/hr → 5,000/hr).
+> The GitHub token needs no scopes — it's for public-repo rate limiting only.
 
 ### Development
 
@@ -119,7 +123,7 @@ Contributions to the dashboard are welcome! For translating LeRobot documentatio
 
 1. Visit the [Korean issue #3058](https://github.com/huggingface/lerobot/issues/3058) or [Chinese issue #3290](https://github.com/huggingface/lerobot/issues/3290)
 2. Comment to claim a file
-3. Follow the [contribution guide](https://lerobot-korean-watch.lovable.app/guide)
+3. Follow the contribution guide in the dashboard's **Guide** tab
 
 ## Maintainer
 

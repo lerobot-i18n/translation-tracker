@@ -1,7 +1,6 @@
 # LeRobot 한국어 번역 가이드
 
 > **이슈:** [#3058 🌐 [i18n-KO] Translating docs to Korean](https://github.com/huggingface/lerobot/issues/3058)  
-> **대시보드:** https://lerobot-korean-watch.lovable.app  
 > **관리자:** [@1wos](https://github.com/1wos)
 
 ---
@@ -20,7 +19,7 @@
 ## 번역 워크플로우
 
 ### 1. 파일 선택
-- [대시보드](https://lerobot-korean-watch.lovable.app)에서 **미번역** 파일 찾기
+- 대시보드에서 **미번역** 파일 찾기
 - [이슈 #3058](https://github.com/huggingface/lerobot/issues/3058)에 댓글
   - 예: `I'll take installation.mdx`
 

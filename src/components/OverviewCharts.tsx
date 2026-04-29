@@ -46,7 +46,7 @@ export default function OverviewCharts({ done, outdated, review, translating, re
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number, name: string) => [`${value}개`, name]}
+                formatter={(value: number, name: string) => [t("chart.unitCount", { value }), name]}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",

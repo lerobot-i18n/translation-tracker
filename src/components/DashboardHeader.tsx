@@ -1,10 +1,12 @@
 import { ExternalLink, Github, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import { getStats } from "@/data/translationData";
 import logoImg from "@/assets/lerobot-logo.png";
 import { useEffect, useState } from "react";
 
 export default function DashboardHeader() {
+  const { t } = useTranslation();
   const { total, done } = getStats();
   const pct = Math.round((done / total) * 1000) / 10;
   const [dark, setDark] = useState(() =>
@@ -25,7 +27,7 @@ export default function DashboardHeader() {
               <h1 className="text-xl font-bold tracking-tight text-foreground">
                 Korean Translation Dashboard
               </h1>
-              <p className="text-sm text-muted-foreground">한국어 번역 현황</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.headerSubtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -52,7 +54,7 @@ export default function DashboardHeader() {
         {/* Progress bar */}
         <div className="mt-5">
           <div className="flex items-center justify-between text-sm mb-1.5">
-            <span className="font-medium text-foreground">전체 진행률</span>
+            <span className="font-medium text-foreground">{t("dashboard.overallProgress")}</span>
             <span className="font-semibold text-primary">{done}/{total} ({pct}%)</span>
           </div>
           <div className="h-3 w-full rounded-full bg-muted overflow-hidden">

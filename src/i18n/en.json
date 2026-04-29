@@ -2,13 +2,16 @@
   "dashboard": {
     "title": "Translation Dashboard",
     "subtitle": "LeRobot Documentation Translation Progress",
+    "headerSubtitle": "Translation Status",
     "totalFiles": "Total Files",
+    "totalFilesShort": "Total Files",
     "done": "Completed",
     "outdated": "Outdated",
     "review": "In Review",
     "translating": "Translating",
     "requested": "Requested",
     "pending": "Untranslated",
+    "inProgress": "In Progress",
     "overallProgress": "Overall Progress",
     "refresh": "Refresh",
     "loading": "Loading...",
@@ -44,11 +47,51 @@
   "chart": {
     "overallProgress": "Overall Progress",
     "sectionProgress": "Progress by Section",
-    "total": "Total"
+    "total": "Total",
+    "unitCount": "{{value}}"
   },
   "activity": {
     "title": "Recent Activity",
     "issueTracking": "Translation checklist & progress",
     "noPRs": "No related PRs found."
+  },
+  "glossary": {
+    "title": "📖 Glossary",
+    "english": "English",
+    "translation": "Translation"
+  },
+  "guide": {
+    "title": "🤝 Contributing Guide",
+    "stepFork": "Fork the huggingface/lerobot repository",
+    "stepBranch": "Create a branch per file",
+    "stepTranslate": "Translate the document",
+    "stepCheck": "Run pre-commit run to check formatting",
+    "stepPR": "Submit a PR per file",
+    "ruleBranch": "Branch naming",
+    "ruleBranchDesc": "(don't work on main directly)",
+    "ruleTitle": "PR title format",
+    "ruleBody": "Add to PR body",
+    "rulePerPR": "PR scope",
+    "rulePerPRDesc": "One PR per file (faster reviews!)",
+    "quickStart": "Quick Start",
+    "translateComment": "# translation work"
+  },
+  "section": {
+    "Get Started": "Get Started",
+    "Tutorials": "Tutorials",
+    "Datasets": "Datasets",
+    "Policies": "Policies",
+    "Reward Models": "Reward Models",
+    "Inference": "Inference",
+    "Simulation": "Simulation",
+    "Benchmarks": "Benchmarks",
+    "Robot Processors": "Robot Processors",
+    "Robots": "Robots",
+    "Teleoperators": "Teleoperators",
+    "Sensors": "Sensors",
+    "Supported Hardware": "Supported Hardware",
+    "Resources": "Resources",
+    "About": "About",
+    "Other": "Other"
   }
 }

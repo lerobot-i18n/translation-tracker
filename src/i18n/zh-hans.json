@@ -1,14 +1,17 @@
 {
   "dashboard": {
-    "title": "翻译仪表盘",
+    "title": "翻译看板",
     "subtitle": "LeRobot 文档翻译进度",
+    "headerSubtitle": "翻译进度",
     "totalFiles": "文件总数",
+    "totalFilesShort": "文件总数",
     "done": "已完成",
     "outdated": "需更新",
     "review": "审核中",
     "translating": "翻译中",
     "requested": "已申请",
     "pending": "未翻译",
+    "inProgress": "进行中",
     "overallProgress": "总进度",
     "refresh": "刷新",
     "loading": "加载中...",
@@ -17,14 +20,14 @@
     "retry": "重试"
   },
   "nav": {
-    "dashboard": "仪表盘",
+    "dashboard": "看板",
     "contributors": "贡献者",
     "glossary": "术语表",
-    "guide": "参与贡献",
-    "subtitle": "翻译追踪系统"
+    "guide": "贡献指南",
+    "subtitle": "翻译进度追踪"
   },
   "status": {
-    "done": "完成",
+    "done": "已完成",
     "outdated": "需更新",
     "review": "审核中",
     "translating": "翻译中",
@@ -38,17 +41,57 @@
     "status": "状态",
     "assignee": "负责人",
     "detail": "详情",
-    "commentVolunteer": "通过评论申请",
+    "commentVolunteer": "通过评论自荐",
     "all": "全部"
   },
   "chart": {
     "overallProgress": "总进度",
     "sectionProgress": "各章节进度",
-    "total": "总计"
+    "total": "总计",
+    "unitCount": "{{value}}"
   },
   "activity": {
     "title": "最近活动",
-    "issueTracking": "翻译清单与进度",
+    "issueTracking": "翻译清单与进度追踪",
     "noPRs": "暂无相关的 PR。"
+  },
+  "glossary": {
+    "title": "📖 术语表 (Glossary)",
+    "english": "English",
+    "translation": "中文"
+  },
+  "guide": {
+    "title": "🤝 贡献指南",
+    "stepFork": "Fork huggingface/lerobot 仓库",
+    "stepBranch": "为每个文件创建分支",
+    "stepTranslate": "翻译文档",
+    "stepCheck": "运行 pre-commit run 检查格式",
+    "stepPR": "按文件提交 PR",
+    "ruleBranch": "分支命名规则",
+    "ruleBranchDesc": "(请勿直接在 main 上修改)",
+    "ruleTitle": "PR 标题格式",
+    "ruleBody": "PR 正文添加",
+    "rulePerPR": "PR 粒度",
+    "rulePerPRDesc": "一个文件一个 PR (审核更快!)",
+    "quickStart": "快速开始",
+    "translateComment": "# 翻译工作"
+  },
+  "section": {
+    "Get Started": "快速开始",
+    "Tutorials": "教程",
+    "Datasets": "数据集",
+    "Policies": "策略",
+    "Reward Models": "奖励模型",
+    "Inference": "推理",
+    "Simulation": "仿真",
+    "Benchmarks": "基准测试",
+    "Robot Processors": "机器人处理器",
+    "Robots": "机器人",
+    "Teleoperators": "遥操作设备",
+    "Sensors": "传感器",
+    "Supported Hardware": "支持的硬件",
+    "Resources": "资源",
+    "About": "关于",
+    "Other": "其他"
   }
 }

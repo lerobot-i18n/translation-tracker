@@ -156,24 +156,69 @@ export const sections: TranslationSection[] = [
 ];
 
 export const glossary = [
-  { en: "Policy", ko: "정책" },
-  { en: "Dataset", ko: "데이터셋" },
-  { en: "Training", ko: "학습" },
-  { en: "Inference", ko: "추론" },
-  { en: "Imitation Learning", ko: "모방 학습" },
-  { en: "Reinforcement Learning", ko: "강화 학습" },
-  { en: "Teleoperation", ko: "텔레오퍼레이션" },
-  { en: "Processor", ko: "프로세서" },
-  { en: "Environment", ko: "환경" },
-  { en: "Simulation", ko: "시뮬레이션" },
-  { en: "Reward Model", ko: "보상 모델" },
-  { en: "Fine-tuning", ko: "파인튜닝" },
-  { en: "Pre-trained", ko: "사전학습된" },
-  { en: "Checkpoint", ko: "체크포인트" },
-  { en: "Episode", ko: "에피소드" },
-  { en: "Action", ko: "액션" },
-  { en: "Observation", ko: "관측" },
-  { en: "Feature", ko: "특징" },
+  // Core ML / RL
+  { en: "Policy", ko: "정책", note: "" },
+  { en: "Dataset", ko: "데이터셋", note: "" },
+  { en: "Training", ko: "학습", note: "병기 X" },
+  { en: "Inference", ko: "추론", note: "" },
+  { en: "Fine-tuning", ko: "파인튜닝", note: "" },
+  { en: "Pre-trained", ko: "사전 학습된", note: "" },
+  { en: "Checkpoint", ko: "체크포인트", note: "" },
+  { en: "Imitation Learning", ko: "모방 학습", note: "띄어쓰기" },
+  { en: "Reinforcement Learning", ko: "강화 학습", note: "띄어쓰기 (HF 표준)" },
+  { en: "Reward Model", ko: "보상 모델", note: "" },
+  { en: "Learning rate", ko: "학습률", note: "산문 / 코드는 learning_rate" },
+  // Robotics
+  { en: "Teleoperation", ko: "텔레오퍼레이션", note: "" },
+  { en: "End-effector", ko: "엔드 이펙터", note: "한국 로보틱스 업계 표준 (띄어쓰기)" },
+  { en: "Follower arm", ko: "팔로워 암", note: "띄어쓰기" },
+  { en: "Leader arm", ko: "리더 암", note: "띄어쓰기" },
+  { en: "Gripper", ko: "그리퍼", note: "" },
+  // LeRobot specific
+  { en: "Processor", ko: "프로세서", note: "" },
+  { en: "Step (ProcessorStep)", ko: "스텝", note: "단계와 혼용 X" },
+  { en: "Transition (EnvTransition)", ko: "트랜지션", note: "또는 영문 유지" },
+  { en: "Converter", ko: "변환", note: "Transition과 분리" },
+  { en: "Environment", ko: "환경", note: "" },
+  { en: "Simulation", ko: "시뮬레이션", note: "" },
+  { en: "Episode", ko: "에피소드", note: "" },
+  { en: "Action", ko: "액션", note: "" },
+  { en: "Observation", ko: "관측", note: "관측치 X" },
+  { en: "Feature", ko: "피처", note: "" },
+  { en: "extras", ko: "확장(extras)", note: "첫 등장 병기" },
+];
+
+export const styleRules = [
+  {
+    category: "문체 (Sentence endings)",
+    do: "~합니다 (선언) / ~해주세요 (요청)",
+    avoid: "~하십시오 (격식 과함), ~하세요 (반말 느낌), ~한다 (평어체)",
+  },
+  {
+    category: "띄어쓰기",
+    do: "강화 학습, 가상 환경, 사전 학습",
+    avoid: "강화학습, 가상환경, 사전학습 (붙여쓰기)",
+  },
+  {
+    category: "복수 표현",
+    do: "여러 GPU에, 각 모델, GPU 간",
+    avoid: "GPU들에, 모델들, 함수들 (무정명사 + 들)",
+  },
+  {
+    category: "부정 접두사",
+    do: "메인이 아닌 프로세스",
+    avoid: "비-메인 프로세스 (비-는 한자어와만 결합)",
+  },
+  {
+    category: "한영 병기",
+    do: "엔드 이펙터(end-effector) — 첫 등장 시에만",
+    avoid: "재등장 시 반복 병기",
+  },
+  {
+    category: "마크다운",
+    do: "코드펜스 짝 맞추기, 헤더 레벨 원문 유지",
+    avoid: "4-tick 펜스 미닫힘, ## ↔ ### 임의 변경",
+  },
 ];
 
 export function getStats() {

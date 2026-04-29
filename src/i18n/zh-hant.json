@@ -2,13 +2,16 @@
   "dashboard": {
     "title": "翻譯儀表板",
     "subtitle": "LeRobot 文件翻譯進度",
-    "totalFiles": "總檔案數",
+    "headerSubtitle": "翻譯進度",
+    "totalFiles": "檔案總數",
+    "totalFilesShort": "檔案總數",
     "done": "已完成",
     "outdated": "需更新",
-    "review": "審查中",
+    "review": "審核中",
     "translating": "翻譯中",
-    "requested": "已申請",
+    "requested": "認領中",
     "pending": "未翻譯",
+    "inProgress": "進行中",
     "overallProgress": "總進度",
     "refresh": "重新整理",
     "loading": "載入中...",
@@ -21,14 +24,14 @@
     "contributors": "貢獻者",
     "glossary": "詞彙表",
     "guide": "參與貢獻",
-    "subtitle": "翻譯追蹤系統"
+    "subtitle": "翻譯進度追蹤"
   },
   "status": {
-    "done": "完成",
+    "done": "已完成",
     "outdated": "需更新",
-    "review": "審查中",
+    "review": "審核中",
     "translating": "翻譯中",
-    "requested": "已申請",
+    "requested": "認領中",
     "pending": "未翻譯"
   },
   "table": {
@@ -38,17 +41,57 @@
     "status": "狀態",
     "assignee": "負責人",
     "detail": "詳情",
-    "commentVolunteer": "透過留言申請",
+    "commentVolunteer": "透過留言認領",
     "all": "全部"
   },
   "chart": {
     "overallProgress": "總進度",
     "sectionProgress": "各章節進度",
-    "total": "總計"
+    "total": "總計",
+    "unitCount": "{{value}}"
   },
   "activity": {
     "title": "最近活動",
     "issueTracking": "翻譯清單與進度",
     "noPRs": "尚無相關的 PR。"
+  },
+  "glossary": {
+    "title": "📖 詞彙表 (Glossary)",
+    "english": "English",
+    "translation": "繁體中文"
+  },
+  "guide": {
+    "title": "🤝 貢獻指南",
+    "stepFork": "Fork huggingface/lerobot 儲存庫",
+    "stepBranch": "為每個檔案建立分支",
+    "stepTranslate": "翻譯文件",
+    "stepCheck": "執行 pre-commit run 檢查格式",
+    "stepPR": "依檔案逐一送出 PR",
+    "ruleBranch": "分支命名規則",
+    "ruleBranchDesc": "(請勿直接在 main 上修改)",
+    "ruleTitle": "PR 標題格式",
+    "ruleBody": "PR 內文加上",
+    "rulePerPR": "PR 範圍",
+    "rulePerPRDesc": "一個檔案一個 PR (審核更快!)",
+    "quickStart": "快速上手",
+    "translateComment": "# 翻譯作業"
+  },
+  "section": {
+    "Get Started": "快速上手",
+    "Tutorials": "教學課程",
+    "Datasets": "資料集",
+    "Policies": "策略模型",
+    "Reward Models": "獎勵模型",
+    "Inference": "推論",
+    "Simulation": "模擬",
+    "Benchmarks": "基準測試",
+    "Robot Processors": "機器人處理器",
+    "Robots": "機器人",
+    "Teleoperators": "遙控操作器",
+    "Sensors": "感測器",
+    "Supported Hardware": "支援的硬體",
+    "Resources": "資源",
+    "About": "關於",
+    "Other": "其他"
   }
 }

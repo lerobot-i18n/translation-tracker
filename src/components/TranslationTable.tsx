@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getBilingualSectionLabel } from "@/lib/localization";
 
 interface FileEntry {
   filename: string;
@@ -91,6 +92,7 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
         const total = filteredFiles.length;
         const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         const isOpen = !collapsed[section.name];
+        const sectionLabel = getBilingualSectionLabel(t, section.name);
         return (
           <div key={section.name} className="rounded-lg border border-border bg-card overflow-hidden">
             <button
@@ -98,8 +100,7 @@ export default function TranslationTable({ sections }: { sections: SectionEntry[
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">{section.name}</span>
-                <span className="text-sm text-muted-foreground">({section.nameKo})</span>
+                <span className="font-semibold text-foreground">{sectionLabel}</span>
                 <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
                   {done}/{total} ({pct}%)
                 </span>

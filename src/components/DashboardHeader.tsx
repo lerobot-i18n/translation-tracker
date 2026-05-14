@@ -25,7 +25,7 @@ export default function DashboardHeader() {
             <img src={logoImg} alt="LeRobot" className="h-10 rounded-md" />
             <div>
               <h1 className="text-xl font-bold tracking-tight text-foreground">
-                Korean Translation Dashboard
+                {t("dashboard.headerTitle")}
               </h1>
               <p className="text-sm text-muted-foreground">{t("dashboard.headerSubtitle")}</p>
             </div>

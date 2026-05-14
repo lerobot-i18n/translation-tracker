@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { getBilingualSectionLabel } from "@/lib/localization";
 
 interface SectionStat {
   name: string;
@@ -15,10 +16,13 @@ export default function SectionBarChart({ sections }: { sections: SectionStat[] 
       <div className="space-y-3">
         {sections.map((s) => {
           const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
+          const sectionLabel = getBilingualSectionLabel(t, s.name);
           return (
             <div key={s.name} className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-foreground font-medium truncate max-w-[60%]">{t(`section.${s.name}`, s.name)}</span>
+                <span className="text-foreground font-medium truncate max-w-[70%]" title={sectionLabel}>
+                  {sectionLabel}
+                </span>
                 <span className="text-muted-foreground shrink-0">
                   {s.done}/{s.total} ({pct}%)
                 </span>

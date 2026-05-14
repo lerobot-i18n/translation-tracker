@@ -2,10 +2,11 @@ import { useRecentPRs } from "@/hooks/useGithubData";
 import { GitPullRequest, ExternalLink, Pin } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslation } from "react-i18next";
+import { getDateLocale, getPullRequestStateLabel } from "@/lib/localization";
 
 export default function ActivityTimeline() {
   const { data: prs, isLoading } = useRecentPRs();
-  const { lang } = useLanguage();
+  const { lang, uiLang } = useLanguage();
   const { t } = useTranslation();
 
   const items = prs && prs.length > 0 ? prs : [];
@@ -26,7 +27,7 @@ export default function ActivityTimeline() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-foreground font-medium truncate group-hover:text-primary transition-colors">
-            Issue #{lang.issueNumber} — {lang.label} Translation Tracking
+            {t("activity.issueTitle", { issueNumber: lang.issueNumber, language: lang.label })}
           </p>
           <p className="text-xs text-muted-foreground">
             {t("activity.issueTracking")}
@@ -68,10 +69,10 @@ export default function ActivityTimeline() {
                   #{pr.number} {pr.title}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  @{pr.author} • {new Date(pr.date).toLocaleDateString("ko-KR")}
-                  {pr.state === "merged" && <span className="ml-1 text-status-done">merged</span>}
-                  {pr.state === "open" && <span className="ml-1 text-status-progress">open</span>}
-                  {pr.state === "closed" && <span className="ml-1 text-muted-foreground">closed</span>}
+                  @{pr.author} • {new Date(pr.date).toLocaleDateString(getDateLocale(uiLang))}
+                  {pr.state === "merged" && <span className="ml-1 text-status-done">{getPullRequestStateLabel(t, pr.state)}</span>}
+                  {pr.state === "open" && <span className="ml-1 text-status-progress">{getPullRequestStateLabel(t, pr.state)}</span>}
+                  {pr.state === "closed" && <span className="ml-1 text-muted-foreground">{getPullRequestStateLabel(t, pr.state)}</span>}
                 </p>
               </div>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1" />

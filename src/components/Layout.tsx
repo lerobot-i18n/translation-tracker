@@ -133,9 +133,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </a>
             </div>
             <div className="flex items-center gap-2">
-              <span>Maintainer: <strong className="text-foreground">@pkooij</strong></span>
+              <span>{t("footer.maintainer")}: <strong className="text-foreground">@pkooij</strong></span>
               <span>•</span>
-              <span>Lead: <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="font-bold text-foreground hover:text-primary transition-colors">@1wos</a></span>
+              <span>{t("footer.lead")}: <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="font-bold text-foreground hover:text-primary transition-colors">@1wos</a></span>
               <a href="https://github.com/1wos" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="GitHub">
                 <Github className="h-4 w-4" />
               </a>

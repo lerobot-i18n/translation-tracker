@@ -13,6 +13,7 @@ import {
   OutdatedInfo,
 } from "@/services/githubApi";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getSectionKoreanLabel } from "@/lib/localization";
 
 export function useTranslationData() {
   const { lang } = useLanguage();
@@ -105,15 +106,15 @@ export function useMergedTranslationData() {
   });
   const { data: outdatedData } = outdatedQuery;
 
-  const isLoading = isLoadingGithub || isLoadingIssue;
-  const error = githubError || issueError;
+  const isLoading = isLoadingGithub;
+  const error = githubError;
 
   if (isLoading || !githubData) {
     return {
       stats: { total: 0, done: 0, outdated: 0, progress: 0, requested: 0, pending: 0 },
       sectionStats: [],
-      isLoading,
-      error,
+      isLoading: isLoading || (!githubData && isLoadingIssue),
+      error: githubError || issueError,
       isLive: false,
       rawStatuses: [],
     };
@@ -276,30 +277,10 @@ export function useMergedTranslationData() {
   const sectionOrder = toctreeData
     ? toctreeData.map((s) => s.title)
     : [
-        "Get Started", "Tutorials", "Datasets", "Policies", "Reward Models",
+        "Get Started", "Tutorials", "Compute & Hardware", "Datasets", "Policies", "Reward Models",
         "Inference", "Simulation", "Benchmarks", "Robot Processors", "Robots",
         "Teleoperators", "Sensors", "Supported Hardware", "Resources", "About",
       ];
-
-  const koLabels: Record<string, string> = {
-    "Get Started": "시작하기",
-    "Get started": "시작하기",
-    "Tutorials": "튜토리얼",
-    "Datasets": "데이터셋",
-    "Policies": "정책",
-    "Reward Models": "보상 모델",
-    "Inference": "추론",
-    "Simulation": "시뮬레이션",
-    "Robot Processors": "로봇 프로세서",
-    "Robots": "로봇",
-    "Teleoperators": "텔레오퍼레이터",
-    "Sensors": "센서",
-    "Supported Hardware": "지원 하드웨어",
-    "Resources": "리소스",
-    "About": "소개",
-    "Benchmarks": "벤치마크",
-    "root": "기타",
-  };
 
   const sectionMap = new Map<string, typeof mergedStatuses>();
   for (const s of mergedStatuses) {
@@ -318,7 +299,7 @@ export function useMergedTranslationData() {
     })
     .map(([name, files]) => ({
       name,
-      nameKo: koLabels[name] || name,
+      nameKo: getSectionKoreanLabel(name),
       total: files.length,
       done: files.filter((f) => f.status === "done").length,
       outdated: files.filter((f) => f.status === "outdated").length,

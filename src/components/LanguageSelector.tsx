@@ -1,8 +1,10 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LANGUAGES, useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 export default function LanguageSelector() {
   const { lang, setLangCode, uiLang, setUiLang } = useLanguage();
+  const { t } = useTranslation();
   const isEn = uiLang === "en";
 
   const toggleEn = () => {
@@ -35,7 +37,8 @@ export default function LanguageSelector() {
         type="button"
         onClick={toggleEn}
         aria-pressed={isEn}
-        title={isEn ? "Switch UI back to native language" : "Switch UI to English"}
+        aria-label={isEn ? t("language.switchToNative") : t("language.switchToEnglish")}
+        title={isEn ? t("language.switchToNative") : t("language.switchToEnglish")}
         className={`h-8 px-2.5 rounded-md border text-xs font-semibold transition-colors ${
           isEn
             ? "bg-primary text-primary-foreground border-primary"

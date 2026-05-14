@@ -41,9 +41,19 @@ function getCached<T>(key: string): T | null {
     if (!raw) return null;
     const cached: CachedData<T> = JSON.parse(raw);
     if (Date.now() - cached.timestamp > CACHE_TTL) {
-      localStorage.removeItem(key);
       return null;
     }
+    return cached.data;
+  } catch {
+    return null;
+  }
+}
+
+function getStaleCached<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const cached: CachedData<T> = JSON.parse(raw);
     return cached.data;
   } catch {
     return null;
@@ -57,6 +67,7 @@ function setCache<T>(key: string, data: T) {
 }
 
 const API_BASE = "https://api.github.com";
+const GITHUB_FETCH_TIMEOUT_MS = 15000;
 
 async function fetchGitHub(endpoint: string) {
   // Try Supabase Edge Function proxy first (recommended for production)
@@ -83,12 +94,23 @@ async function fetchGitHub(endpoint: string) {
   const token = import.meta.env.VITE_GITHUB_TOKEN;
   if (token) headers.Authorization = `token ${token}`;
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { headers });
-  if (!res.ok) {
-    if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
-    throw new Error(`GitHub API error: ${res.status}`);
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), GITHUB_FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_BASE}${endpoint}`, { headers, signal: controller.signal });
+    if (!res.ok) {
+      if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please try again later.");
+      throw new Error(`GitHub API error: ${res.status}`);
+    }
+    return res.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("GitHub API request timed out. Please try again.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
   }
-  return res.json();
 }
 
 export async function fetchRepoTree(langDir = "ko"): Promise<{ enFiles: GitHubFileInfo[]; translatedFiles: GitHubFileInfo[] }> {
@@ -96,7 +118,14 @@ export async function fetchRepoTree(langDir = "ko"): Promise<{ enFiles: GitHubFi
   const cached = getCached<{ enFiles: GitHubFileInfo[]; translatedFiles: GitHubFileInfo[] }>(cacheKey);
   if (cached) return cached;
 
-  const tree = await fetchGitHub(`/repos/${REPO}/git/trees/main?recursive=1`);
+  let tree;
+  try {
+    tree = await fetchGitHub(`/repos/${REPO}/git/trees/main?recursive=1`);
+  } catch (error) {
+    const stale = getStaleCached<{ enFiles: GitHubFileInfo[]; translatedFiles: GitHubFileInfo[] }>(cacheKey);
+    if (stale) return stale;
+    throw error;
+  }
   const allFiles: Array<{ path: string; sha: string; size: number }> = tree.tree.filter(
     (f: any) => f.type === "blob"
   );
@@ -249,6 +278,7 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
   const cached = getCached<IssueChecklistItem[]>(cacheKey);
   if (cached) return cached;
 
+  try {
   // First check issue body, then comments for checklist
   const issue = await fetchGitHub(`/repos/${REPO}/issues/${issueNumber}`);
   let body: string = issue.body || "";
@@ -319,6 +349,11 @@ export async function fetchIssueChecklist(issueNumber = 3058): Promise<IssueChec
 
   setCache(cacheKey, items);
   return items;
+  } catch (error) {
+    const stale = getStaleCached<IssueChecklistItem[]>(cacheKey);
+    if (stale) return stale;
+    throw error;
+  }
 }
 
 export interface CommentVolunteer {

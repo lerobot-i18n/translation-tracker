@@ -48,14 +48,14 @@ This project is referenced in the [official LeRobot v0.6.0 roadmap](https://gith
 ### Prerequisites
 
 - Node.js 18+
-- npm
+- Bun
 
 ### Installation
 
 ```bash
 git clone https://github.com/lerobot-i18n/translation-tracker.git
 cd translation-tracker
-npm install
+bun install
 ```
 
 ### Environment Variables
@@ -76,10 +76,21 @@ VITE_GITHUB_TOKEN=<your-github-token>
 ### Development
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Open [http://localhost:8080](http://localhost:8080).
+
+## Deployment Automation
+
+The project is ready for Vercel Git Integration:
+
+- **Production deploys**: every push to `main`
+- **Preview deploys**: every pull request
+- **Build command**: `bun run build`
+- **Output directory**: `dist`
+
+GitHub Actions also runs tests and build checks on every pull request and every push to `main`.
 
 ## Project Structure
 
@@ -131,7 +142,3 @@ Contributions to the dashboard are welcome! For translating LeRobot documentatio
 
 - Lead translator & dashboard creator
 - [Email](mailto:1wosomm1@gmail.com) · [LinkedIn](https://www.linkedin.com/in/someee/)
-
-## License
-
-MIT

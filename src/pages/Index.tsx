@@ -58,11 +58,11 @@ export default function Index() {
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               {isLive ? (
-                <><Wifi className="h-3 w-3 text-status-done" /> Live</>
+                <><Wifi className="h-3 w-3 text-status-done" /> {t("dashboard.live")}</>
               ) : isLoading ? (
                 <><Loader2 className="h-3 w-3 animate-spin" /> {t("dashboard.loading")}</>
               ) : (
-                <><WifiOff className="h-3 w-3" /> Offline</>
+                <><WifiOff className="h-3 w-3" /> {t("dashboard.offline")}</>
               )}
             </span>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>

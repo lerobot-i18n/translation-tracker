@@ -67,22 +67,22 @@ git push origin i18n-ko/<filename>
 | 상황 | 권장 문체 | 예시 |
 |------|----------|------|
 | **사용자에게 요청** | `~해주세요` | `참고해주세요`, `실행해주세요`, `확인해주세요` |
+| **절차 안내** | `~하세요` 또는 `~해주세요` | `선택하세요`, `실행해주세요` |
 | **사실 선언** | `~합니다` | `제공합니다`, `지원합니다`, `포함됩니다` |
-| **피해야 할 것** | `~하십시오` (너무 격식) | ~~`참고하십시오`~~ → `참고해주세요` |
-| **피해야 할 것** | `~하세요` (반말 느낌) | ~~`실행하세요`~~ → `실행해주세요` |
+| **피해야 할 것** | 반복적인 `~하십시오` | ~~`설치하십시오`~~ 반복 → `설치해주세요` / `설치하세요` |
 
 ### ✅ 좋은 예시
 ```
 LeRobot을 설치하려면 [설치 가이드](./installation)를 참고해주세요.
 🤗 LeRobot은 PyTorch 기반의 모델을 제공합니다.
 추가 기능을 설치하려면 다음 명령을 실행해주세요.
+원하는 카메라를 선택하세요.
 ```
 
 ### ❌ 피할 예시
 ```
-LeRobot을 설치하려면 [설치 가이드](./installation)를 참고하세요.  ← ~하세요
 🤗 LeRobot은 PyTorch 기반의 모델을 제공하고 있음.  ← 종결어미 이상
-추가 기능을 설치하려면 다음 명령을 실행하십시오.  ← 너무 격식
+추가 기능을 설치하십시오. 설정을 확인하십시오. 실행하십시오.  ← ~하십시오 반복
 ```
 
 ---
@@ -116,20 +116,33 @@ LeRobot을 설치하려면 [설치 가이드](./installation)를 참고하세요
 | inference | 추론 | |
 | checkpoint | 체크포인트 | |
 | feature | 특징 또는 피처 | 문맥에 따라 |
+| one-hot | 원-핫(one-hot) | 첫 등장 시 병기 |
+| task conditioning | 작업 조건화(task conditioning) | 첫 등장 시 병기 |
 | imitation learning | 모방 학습 | |
 | reinforcement learning | 강화 학습 | |
 | teleoperation | 텔레오퍼레이션 | |
 | episode | 에피소드 | |
 | action | 액션 | |
 | observation | 관측 | |
+| proprioceptive state | 고유수용성 상태(proprioceptive state) | 로봇 정책 입력 문맥 |
 | reward model | 보상 모델 | |
 | environment | 환경 | |
 | simulation | 시뮬레이션 | |
+| benchmark evaluation | 벤치마크 평가 | 평가 프로토콜 문맥 |
+| difficulty group | 난이도 그룹 | easy/medium/hard 등 |
 | processor | 프로세서 | |
 | follower arm | 팔로워 암 | **띄어쓰기 필수** |
 | leader arm | 리더 암 | **띄어쓰기 필수** |
 | virtual environment | 가상 환경 | **띄어쓰기 필수** |
 | gripper | 그리퍼 | |
+| RealSense | RealSense | 제품명 대소문자 유지 |
+| cleanly disconnect | 올바르게 연결 해제 | 깔끔하게 X |
+| resource leak | 리소스 누수 | |
+| warm-up read | 워밍업 읽기 | |
+| input device | 입력 장치 | 카메라 선택 문맥 |
+| source (OBS) | 입력 소스 | OBS UI 문맥 |
+| native Camera app | 기본 카메라 앱 | |
+| advertise (device capability) | 보고하다 | 해상도를 광고하다 X |
 | chunk | 청크(chunk) | 첫 등장 시 병기 |
 | flagship | 대표 / 주력 | |
 | extras | 선택적 기능(extras) | 첫 등장 시 병기 |
@@ -224,8 +237,8 @@ lerobot-record \
 
 ### 1. 문체 혼용
 ```
-❌ 한 파일 내에 "~하십시오"와 "~하세요" 혼용
-✅ "~해주세요"로 통일
+❌ 절차 안내에서 "~하십시오"를 반복
+✅ "~하세요" 또는 "~해주세요"로 자연스럽게 통일
 ```
 
 ### 2. 용어 불일치
@@ -274,7 +287,7 @@ lerobot-record \
 
 번역 완료 후 셀프 체크:
 
-- [ ] 문체 통일됨 (`~해주세요` / `~합니다`)
+- [ ] 문체 통일됨 (`~합니다` / `~하세요` / `~해주세요`)
 - [ ] 용어 일관성 (같은 단어 같은 번역)
 - [ ] 띄어쓰기 통일 (팔로워 암, 가상 환경 등)
 - [ ] 콜론 앞 공백 제거
